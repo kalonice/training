@@ -1,0 +1,31 @@
+language: cpp python
+
+python: '2.7'
+
+sudo: false
+
+compiler:
+  - gcc
+
+addons:
+  apt:
+    sources:
+      - george-edison55-precise-backports
+    packages:
+      - cmake-data
+      - cmake
+
+before_script:
+  - files=`find . -path ./3rdparty -prune -name \*.hpp -print -o -name \*.h -print -o -name \*.cpp -print -o -name \*.c -print | sed -e ':a;N;$!ba;s/\n/ /g'`
+  - python ./tools/cpplint.py --filter=-legal/copyright,-runtime/threadsafe_fn,-build/include,-readability/utf8 --linelength=100 $files
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+
+after_success:
+   - > find . -executable -type f -print | while read app; do printf
+       "\n=========================================\nExecutable:\t$app\n=========================================\n";
+       "$app"; done
