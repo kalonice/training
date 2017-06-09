@@ -3,7 +3,7 @@ file(GLOB HPPS ../include/*.h ../include/*.hpp)
 
 find_package(Threads)
 
-include_directories(../thirdparty/gtest/googletest/include)
+include_directories(../3rdparty/gtest/googletest/include)
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 if(MSVC)
@@ -13,6 +13,6 @@ if(MSVC)
     MESSAGE(STATUS "MSVC: Set variadic max to 10 for MSVC compatibility")
 endif()
 
-add_executable(tests ${CPPS} ${HPPS})
+add_executable(${PROJECT_NAME}-ut ${CPPS} ${HPPS})
 
-target_link_libraries(tests gtest code_lib  ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME}-ut gtest code_lib  ${CMAKE_THREAD_LIBS_INIT})
