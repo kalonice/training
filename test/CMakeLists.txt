@@ -13,6 +13,10 @@ if(MSVC)
     MESSAGE(STATUS "MSVC: Set variadic max to 10 for MSVC compatibility")
 endif()
 
-add_executable(${PROJECT_NAME}-ut ${CPPS} ${HPPS})
+add_executable(tests ${CPPS} ${HPPS})
 
-target_link_libraries(${PROJECT_NAME}-ut gtest code_lib  ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(tests gtest code_lib ${CMAKE_THREAD_LIBS_INIT})
+#add_custom_command(TARGET tests
+#        POST_BUILD
+#        COMMAND bin/tests
+#        DEPENDS tests VERBATIM)

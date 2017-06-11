@@ -4,8 +4,6 @@ file(GLOB_RECURSE GTEST_HPPS "gtest/googletest/include/*.h")
 include_directories(./gtest/googletest/include)
 include_directories(./gtest/googletest/)
 
-
-
 if(MSVC)
     #vc 2012 fix for vararg templates
     #set(MSVC_COMPILER_DEFS "-D_VARIADIC_MAX=10")

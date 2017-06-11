@@ -1,20 +1,27 @@
 cmake_minimum_required(VERSION 3.2)
 
 project(training)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake" )
+
 include_directories(include)
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+    add_compile_options(-Wall -Wpedantic -Wextra -Werror)
+endif()
+
+include(CppLint)
+
 
 add_subdirectory(3rdparty)
 add_subdirectory(src)
 add_subdirectory(test)
 
-
+file(GLOB LINT_FILES src/*.cpp test/*.cpp include/*.h include/*.hpp)
+add_style_check_target(lint_tests "${LINT_FILES}")
+add_custom_target(lint DEPENDS lint_tests VERBATIM)

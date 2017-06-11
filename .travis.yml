@@ -11,12 +11,22 @@ addons:
   apt:
     sources:
       - george-edison55-precise-backports
+      - llvm-toolchain-precise
+      - ubuntu-toolchain-r-test
     packages:
-      - cmake-data
-      - cmake
+      - CppLint.cmake-data
+      - CppLint.cmake
+      - g++-5
+      - gcc-5
 
-before_script:
-  - make cpplint
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
 
 script:
-  - make clean all
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make lint
+  - make
+  - bin/tests
