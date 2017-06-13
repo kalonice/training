@@ -4,6 +4,36 @@
 #include <vector>
 #include <functional>
 
+// Matrix transformations
+template <typename DataType>
+void Multiply_Matrix_and_Vector_on_Transposed_Matrix(
+        const std::vector<std::vector<DataType>>& matrix,
+        const std::vector<DataType>& vector,
+        std::vector<std::vector<DataType>>* result_matrix_ptr,
+        std::vector<DataType>* result_vector_ptr) {
+    /**
+     * from     A = y
+     * to       A*T(A) = y*T(A)
+     */
+    std::vector<std::vector<DataType>>& result_matrix = *result_matrix_ptr;
+    std::vector<DataType>& result_vector = *result_vector_ptr;
+
+    std::size_t rows = matrix.size();
+    std::size_t cols = matrix[0].size();
+
+    for (std::size_t i = 0; i < rows; ++i) {
+        for (std::size_t j = 0; j < rows; ++j) {
+            for (std::size_t k = 0; k < cols; ++k) {
+                result_matrix[i][j] += matrix[j][k] * matrix[i][k];
+            }
+        }
+        for (std::size_t k = 0; k < cols; ++k) {
+            result_vector[i] += vector[k] * matrix[i][k];
+        }
+    }
+}
+
+
 template <typename DataType>
 int least_squares(const std::vector<std::vector<DataType>>& parameters_matrix,
                   const std::vector<DataType>& answers,
@@ -29,20 +59,14 @@ int least_squares(const std::vector<std::vector<DataType>>& parameters_matrix,
      * а будем обращаться к A, хитря с индексами
      */
     std::size_t rows = parameters_matrix.size();
-    std::size_t cols = parameters_matrix[0].size();
     // sole = System of linear equations = СЛАУ = Система Линейных Алгебраических Уравнений
     std::vector<std::vector<DataType>> sole_matrix(rows, std::vector<DataType>(rows));
     std::vector<DataType> sole_constant_terms(rows);
-    for (std::size_t i = 0; i < rows; ++i) {
-        for (std::size_t j = 0; j < rows; ++j) {
-            for (std::size_t k = 0; k < cols; ++k) {
-                sole_matrix[i][j] += parameters_matrix[j][k] * parameters_matrix[i][k];
-            }
-        }
-        for (std::size_t k = 0; k < cols; ++k) {
-            sole_constant_terms[i] += answers[k] * parameters_matrix[i][k];
-        }
-    }
+    Multiply_Matrix_and_Vector_on_Transposed_Matrix(parameters_matrix,
+                                                    answers,
+                                                    &sole_matrix,
+                                                    &sole_constant_terms);
+
 
     int result_code = sole_solver(&sole_matrix, &sole_constant_terms);
     if (result_code == 0) {
@@ -51,7 +75,6 @@ int least_squares(const std::vector<std::vector<DataType>>& parameters_matrix,
 
     return result_code;
 }
-
 
 
 #endif  // INCLUDE_LEAST_SQUARES_H_
