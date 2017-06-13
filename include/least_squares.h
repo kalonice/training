@@ -5,12 +5,15 @@
 #include <functional>
 
 template <typename DataType>
-int least_squares(const std::vector<std::vector<DataType>>& paramethers_matrix,
+int least_squares(const std::vector<std::vector<DataType>>& parameters_matrix,
                   const std::vector<DataType>& answers,
-                  std::vector<DataType>& result,
-                  std::function<int(std::vector<std::vector<DataType>>&, std::vector<DataType>&)> sole_solver) {
+                  std::vector<DataType>* result_ptr,
+                  std::function<int(std::vector<std::vector<DataType>>*,
+                                    std::vector<DataType>*)> sole_solver) {
+    std::vector<DataType>* result = result_ptr;
     /**
-     * paramethers_matrix - матрица восстанавливаемых параметров. т.е. снаружи подсчитаны не производные,
+     * parameters_matrix - матрица восстанавливаемых параметров.
+     *      т.е. снаружи подсчитаны не производные,
      *      а коэффициэнты при параметрах в зависимости от значений Xi
      *      строки здесь - параметры функции, столбцы - зависимость от Xi
      *      в рещультате у нас некая матрица A
@@ -25,25 +28,25 @@ int least_squares(const std::vector<std::vector<DataType>>& paramethers_matrix,
      * где T(A) - транспонированная матрица A - мы не будем её отдельно хранить,
      * а будем обращаться к A, хитря с индексами
      */
-    std::size_t rows = paramethers_matrix.size();
-    std::size_t cols = paramethers_matrix[0].size();
+    std::size_t rows = parameters_matrix.size();
+    std::size_t cols = parameters_matrix[0].size();
     // sole = System of linear equations = СЛАУ = Система Линейных Алгебраических Уравнений
     std::vector<std::vector<DataType>> sole_matrix(rows, std::vector<DataType>(rows));
     std::vector<DataType> sole_constant_terms(rows);
     for (std::size_t i = 0; i < rows; ++i) {
         for (std::size_t j = 0; j < rows; ++j) {
             for (std::size_t k = 0; k < cols; ++k) {
-                sole_matrix[i][j] += paramethers_matrix[j][k] * paramethers_matrix[i][k];
+                sole_matrix[i][j] += parameters_matrix[j][k] * parameters_matrix[i][k];
             }
         }
         for (std::size_t k = 0; k < cols; ++k) {
-            sole_constant_terms[i] += answers[k] * paramethers_matrix[i][k];
+            sole_constant_terms[i] += answers[k] * parameters_matrix[i][k];
         }
     }
 
-    int result_code = sole_solver(sole_matrix, sole_constant_terms);
+    int result_code = sole_solver(&sole_matrix, &sole_constant_terms);
     if (result_code == 0) {
-        result = sole_constant_terms;
+        *result = sole_constant_terms;
     }
 
     return result_code;
