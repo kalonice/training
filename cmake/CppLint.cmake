@@ -75,7 +75,7 @@ function(add_style_check_target TARGET_NAME SOURCES_LIST)
             "--filter=${STYLE_FILTER}"
             "--counting=detailed"
             "--extensions=cpp,hpp,h"
-            "--linelength=100"
+            "--linelength=120"
             ${SOURCES_LIST}
             DEPENDS ${SOURCES_LIST}
             COMMENT "Linting ${TARGET_NAME}"
