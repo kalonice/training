@@ -1,4 +1,4 @@
-file(GLOB_RECURSE GTEST_CPPS "gtest/googletest/src/*.cc")
+file(GLOB_RECURSE GTEST_CPPS "gtest/googletest/src/gtest-all.cc")
 file(GLOB_RECURSE GTEST_HPPS "gtest/googletest/include/*.h")
 
 include_directories(./gtest/googletest/include)
