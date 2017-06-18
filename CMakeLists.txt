@@ -12,16 +12,12 @@ SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake" )
 include_directories(include)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-    add_compile_options(-Wall -Wpedantic -Wextra -Werror)
+    add_compile_options(-Wall -Wpedantic -Wextra -Werror -Wconversion)
 endif()
 
 include(CppLint)
-
 
 add_subdirectory(3rdparty)
 add_subdirectory(src)
 add_subdirectory(test)
 
-file(GLOB LINT_FILES src/*.cpp test/*.cpp include/*.h include/*.hpp)
-add_style_check_target(lint_tests "${LINT_FILES}")
-add_custom_target(lint DEPENDS lint_tests VERBATIM)

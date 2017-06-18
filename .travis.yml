@@ -26,6 +26,5 @@ script:
   - mkdir build
   - cd build
   - cmake ..
-  - make lint
   - make
   - bin/tests

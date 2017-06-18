@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include <example.h>
+#include "gtest/gtest.h"
 
 TEST(Addition, CanAddTwoNumbers) {
   EXPECT_EQ(add(2, 2), 4);
