@@ -5,7 +5,7 @@
 
 namespace training {
 
-enum class SoleReturnCodes {    // SOLE = System of linear equations
+enum class LinSysReturnCodes {    // LinSys = System of linear equations
   SUCCESS,        // решение найдено
   WRONG_DATA,     // кривые входные данные
   INCOMPATIBLE    // несовместная система линейных уравнений

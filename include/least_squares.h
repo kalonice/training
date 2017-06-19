@@ -41,12 +41,12 @@ void multiply_matrix_and_vector_on_transposed_matrix(
 }
 
 template<typename DataType>
-SoleReturnCodes least_squares(const std::vector<std::vector<DataType>> &parameters_matrix,
+LinSysReturnCodes least_squares(const std::vector<std::vector<DataType>> &parameters_matrix,
                               const std::vector<DataType> &answers,
                               std::vector<DataType> *result_ptr,
-                              std::function<SoleReturnCodes(
+                              std::function<LinSysReturnCodes(
                                   std::vector<std::vector<DataType>> *,
-                                  std::vector<DataType> *)> sole_solver) {
+                                  std::vector<DataType> *)> linsys_solver) {
   std::vector<DataType> *result = result_ptr;
   /**
    * parameters_matrix - матрица восстанавливаемых параметров.
@@ -66,17 +66,17 @@ SoleReturnCodes least_squares(const std::vector<std::vector<DataType>> &paramete
    * а будем обращаться к A, хитря с индексами
    */
   matrix_size_type<DataType> rows = parameters_matrix.size();
-  // sole = System of linear equations = СЛАУ = Система Линейных Алгебраических Уравнений
-  std::vector<std::vector<DataType>> sole_matrix(rows, std::vector<DataType>(rows));
-  std::vector<DataType> sole_constant_terms(rows);
+  // LinSys, linsys = System of linear equations = СЛАУ = Система Линейных Алгебраических Уравнений
+  std::vector<std::vector<DataType>> linsys_matrix(rows, std::vector<DataType>(rows));
+  std::vector<DataType> linsys_constant_terms(rows);
   multiply_matrix_and_vector_on_transposed_matrix(parameters_matrix,
                                                   answers,
-                                                  &sole_matrix,
-                                                  &sole_constant_terms);
+                                                  &linsys_matrix,
+                                                  &linsys_constant_terms);
 
-  SoleReturnCodes result_code = sole_solver(&sole_matrix, &sole_constant_terms);
-  if (result_code == SoleReturnCodes::SUCCESS) {
-    *result = std::move(sole_constant_terms);   // std::move чтоб без копирования
+  LinSysReturnCodes result_code = linsys_solver(&linsys_matrix, &linsys_constant_terms);
+  if (result_code == LinSysReturnCodes::SUCCESS) {
+    *result = std::move(linsys_constant_terms);   // std::move чтоб без копирования
   }
 
   return result_code;
