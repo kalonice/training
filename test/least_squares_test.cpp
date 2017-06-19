@@ -1,7 +1,8 @@
-#include "gtest/gtest.h"
 #include <least_squares.h>
-#include "gaussian_elimination.h"
 #include <math.h>
+#include <vector>
+#include "gtest/gtest.h"
+#include "./gaussian_elimination.h"
 
 const double PRECISION_FOR_DOUBLES = 0.00000001;
 
