@@ -2,132 +2,94 @@
 #define INCLUDE_HAARFEATURE_H_
 #include <vector>
 
+namespace myHaar {
+
+enum haarFeatureType {HORIZONTAL_2x2, VERTICAL_2x2,
+                      HORIZONTAL_3x2, VERTICAL_3x2,
+                      HORIZONTAL_4x2, VERTICAL_4x2,
+                      FOURSQUARE};
+
+const haarFeatureType defaultType = HORIZONTAL_2x2;
 const int defaultWidth = 2;
 const int defaultHeight = 2;
 const int defaultScale = 1;
-const int defaultType = 0;
 const int defaultNumTypes = 7;
+const int defaultRatio3 = 3;
+const int defaultRatio4 = 4;
 
 class Point {
+ public:
+  explicit Point(int new_x = 0, int new_y = 0);
+  int getX() const;
+  int getY() const;
+  Point& operator=(const Point new_point);
+  ~Point() {}
+
  private:
   int x;
   int y;
-
- public:
-  Point(int new_x = 0, int new_y = 0) : x(new_x), y(new_y) {};
-  virtual int getX() const;
-  virtual int getY() const;
-  virtual Point& operator=(Point newPoint);
-  virtual ~Point() {};
 };
 
 class Size {
+ public:
+  explicit Size(int = defaultWidth, int = defaultHeight);
+  int getWidth() const;
+  int getHeight() const;
+  Size& operator*(int value);
+  Size& operator=(const Size new_size);
+  ~Size() {}
+
  private:
   int width;
   int height;
+};
 
+
+int verticalRatio(haarFeatureType);
+int horizontalRatio(haarFeatureType);
+
+class IntegralImage{
  public:
-  Size(int new_width = defaultWidth, int new_height = defaultHeight) :
-       width(new_width), height(new_height) {};
-  virtual int get_width() const;
-  virtual int get_height() const;
-  virtual Size& operator*(int value);
-  virtual Size& operator=(Size newSize);
-  virtual ~Size() {};
+    explicit IntegralImage(std::vector<std::vector<int>> newImg);
+    int getImgWidth() const;
+    int getImgHeight() const;
+    std::vector<std::vector<int>> getImg() const;
+
+ private:
+    std::vector<std::vector<int>> imgIntegral;
+    std::vector<std::vector<int>> imgIntegralRotate45d;
+    std::vector<std::vector<int>> makeIntegralImg(std::vector<std::vector<int>>);
 };
 
 class HaarFeature {
+ public:
+  bool isRotated() const;
+  Point getPoint() const;
+  Size getSize() const;
+  Point getBlackPoint() const;
+  Size getBlackSize() const;
+  int getType() const;
+  bool haarFeatureCreated() const;
+  static HaarFeature* createDefault();
+  static HaarFeature* createRandom(IntegralImage);
+  static HaarFeature* createSpecific(IntegralImage, Point, haarFeatureType, int, bool);
+  ~HaarFeature() {}
+
  private:
+  HaarFeature(Point newPoint = Point(),
+              haarFeatureType newType = defaultType,
+              int newScale = defaultScale,
+              bool newRotate = false);
   Point point;
-  int type;  // amount of types' Haar features is from 0 to 6
+  haarFeatureType type;
   int scale;
-  bool rotate;
+  bool rotate45d;
   Size size;
   Point blackPoint;
   Size blackSize;
-
- public:
-    HaarFeature(Point newPoint = Point(),
-                int newType = defaultType, int newScale = defaultScale,
-                bool newRotate = false) : point(newPoint), type(newType), scale(newScale), rotate(newRotate) {
-      switch (newType) {
-        case 0: {
-          size = Size() * scale;
-          blackPoint = Point(point.getX() + size.get_width() / 2, point.getY());
-          blackSize = Size(size.get_width() / 2, size.get_height());
-          break;
-        }
-        case 1: {
-          size = Size() * scale;
-          blackPoint = Point(point.getX(), point.getY() + size.get_height() / 2);
-          blackSize = Size(size.get_width(), size.get_height() / 2);
-          break;
-        }
-        case 2: {
-          size = Size(3 * scale, 2 * scale);
-          blackPoint = Point(point.getX() + size.get_width() / 3, point.getY());
-          blackSize = Size(size.get_width() / 3, size.get_height());
-          break;
-        }
-        case 3: {
-          size = Size(2 * scale, 3 * scale);
-          blackPoint = Point(point.getX(), point.getY() + size.get_height() / 3);
-          blackSize = Size(size.get_width(), size.get_height() / 3);
-          break;
-        }
-        case 4: {
-          size = Size(defaultWidth * 2, defaultHeight) * scale;
-          blackPoint = Point(point.getX() + size.get_width() / 4, point.getY());
-          blackSize = Size(size.get_width() / 2, size.get_height());
-          break;
-        }
-        case 5: {
-          size = Size(defaultWidth, defaultHeight * 2) * scale;
-          blackPoint = Point(point.getX(), point.getY() + size.get_height() / 4);
-          blackSize = Size(blackPoint.getX(), size.get_height() / 2);
-          break;
-        }
-        case 6: {
-          size = Size(defaultWidth * 2, defaultHeight * 2) * scale;
-          blackPoint = Point(point.getX() + size.get_width() / 4, point.getY() + size.get_height() / 4);
-          blackSize = Size(size.get_width() / 2, size.get_height() / 2);
-          break;
-        }
-        default: {
-          size = Size() * scale;
-          blackPoint = Point(point.getX() + size.get_width() / 2, point.getY());
-          blackSize = Size(size.get_width() / 2, size.get_height());
-          break;
-        }
-      }
-    };
-    virtual bool isRotated() const;
-    virtual Point getPoint() const;
-    virtual Size getSize() const;
-    virtual Point getBlackPoint() const;
-    virtual Size getBlackSize() const;
-    virtual int getType() const;
-    virtual ~HaarFeature() {};
+  bool possibleToCreated;
 };
 
-class IntegralImage{
-private:
-  std::vector<std::vector<int>> imgIntegral;
-  std::vector<std::vector<int>> imgIntegralRotate;
-  std::vector<std::vector<int>> makeIntegralImg(std::vector<std::vector<int>>);
-
-public:
-  IntegralImage(std::vector<std::vector<int>> newImg) {
-    imgIntegral = std::move(makeIntegralImg(newImg));
-    imgIntegralRotate = std::move(makeIntegralImg(newImg));  // !!Wrong
-  };
-  int getImgWidth() const;
-  int getImgHeight() const;
-  std::vector<std::vector<int>> getImg() const;
-};
-
-HaarFeature* createRandom(IntegralImage);
-HaarFeature* createDefault();
-HaarFeature* createSpecific(IntegralImage, Point, int, int, bool);
+}  // namespace myHaar
 
 #endif  // INCLUDE_HAARFEATURE_H_
