@@ -243,7 +243,6 @@ HaarFeature* HaarFeature::createDefault() {
 
 HaarFeature* HaarFeature::createSpecific(IntegralImage img, Point p,
                                          haarFeatureType type, int scale, bool rotate45d) {
-
   if (p.getX() + horizontalRatio(type) * scale >= img.getImgWidth() ||
       p.getY() + verticalRatio(type) * scale >= img.getImgHeight() ||
       type > FOURSQUARE) {
