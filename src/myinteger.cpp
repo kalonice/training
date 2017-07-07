@@ -21,24 +21,24 @@ std::string Integer::AddStrings(const std::string& num1, const std::string& num2
   char up = '0';
   std::string res;
   char n1, n2, tmp;
-  int i = num1.size() - 1, j = num2.size() - 1;
+  int i = static_cast<int>(num1.size()) - 1, j = static_cast<int>(num2.size()) - 1;
 
   while (i >= 0 || j >= 0) {
     if (i < 0)
       n1 = 0;
     else
-      n1 = num1[i] - '0';
+      n1 = static_cast<char>(num1[i] - '0');
 
     if (j < 0)
       n2 = 0;
     else
-      n2 = num2[j] - '0';
+      n2 = static_cast<char>(num2[j] - '0');
 
-    tmp = n1 + n2 + up;
+    tmp = static_cast<char>(n1 + n2 + up);
 
     if (tmp > '9') {
       up = '1';
-      tmp -= 10;
+      tmp = static_cast<char>(tmp - 10);
     }
     else
       up = '0';
@@ -53,7 +53,7 @@ std::string Integer::AddStrings(const std::string& num1, const std::string& num2
 }
 
 std::string Integer::MulStrings(const std::string& num1, const std::string& num2) {
-  char a = 0, b = 0, c = 0;
+  char a = 0, b = 0;
   std::string res, tmp;
 
   if (num1 == "0" || num2 == "0") {
@@ -61,22 +61,22 @@ std::string Integer::MulStrings(const std::string& num1, const std::string& num2
     return res;
   }
 
-  for (int i = num2.size() - 1; i >= 0; i--) {
-    for (int j = num1.size() - 1; j >= 0; j--) {
-      a = (num1[j] - '0') * (num2[i] - '0') + b;
+  for (int i = static_cast<int>(num2.size() - 1); i >= 0; i--) {
+    for (int j = static_cast<int>(num1.size()) - 1; j >= 0; j--) {
+      a = static_cast<char>((num1[j] - '0') * (num2[i] - '0') + b);
 
       b = a / 10;
       a = a % 10;
-      a += '0';
+      a = static_cast<char>(a + '0');
       tmp += a;
     }
     if (b != 0) {
-      b += '0';
+      b = static_cast<char>(b + '0');
       tmp += b;
     }
     b = 0;
     std::reverse(tmp.begin(), tmp.end());
-    int k = num2.size() - 1 - i;
+    int k = static_cast<int>(num2.size() - 1 - i);
     while (k != 0) {
       tmp += '0';
       k--;
@@ -92,24 +92,24 @@ std::string Integer::DedStrings(const std::string& num1, const std::string& num2
   char up = 0;
   std::string res;
   char n1, n2, tmp;
-  int i = num1.size() - 1, j = num2.size() - 1;
+  int i = static_cast<int>(num1.size()) - 1, j = static_cast<int>(num2.size()) - 1;
 
   while (i >= 0 || j >= 0) {
     if (i < 0)
       n1 = 0;
     else
-      n1 = num1[i] - '0';
+      n1 = static_cast<char>(num1[i] - '0');
 
     if (j < 0)
       n2 = 0;
     else
-      n2 = num2[j] - '0';
+      n2 = static_cast<char>(num2[j] - '0');
 
-    tmp = n1 - n2 - up + '0';
+    tmp = static_cast<char>(n1 - n2 - up + '0');
 
     if (tmp < '0') {
       up = 1;
-      tmp += 10;
+      tmp = static_cast<char>(tmp + 10);
     }
     else
       up = 0;
@@ -117,7 +117,7 @@ std::string Integer::DedStrings(const std::string& num1, const std::string& num2
     i--;
     j--;
   }
-  int t = res.size() - 1;
+  int t = static_cast<int>(res.size()) - 1;
   int resize_res;
   while(t >= 0 && res[t] == '0') {
     ++resize_res;
@@ -135,7 +135,7 @@ bool Integer::CmpStrings(const std::string& num1, const std::string& num2) {
   if (num1.size() > num2.size()) {
     return true;
   } else if (num1.size() == num2.size()) {
-    for (int i = 0; i < num1.size(); ++i) {
+    for (size_t i = 0; i < num1.size(); ++i) {
       if (num1[i] > num2[i]) {
         return true;
       } else if (num1[i] < num2[i]) {
@@ -205,11 +205,12 @@ Integer Integer::operator-(const Integer& rval) {
 }
 
 Integer Integer::operator*(const Integer& rval) {
-  if (!negative && !rval.negative || negative && rval.negative) {
+  if ((!negative && !rval.negative) || (negative && rval.negative)) {
     return Integer(MulStrings(value, rval.value), false);
-  } else if (!negative && rval.negative || negative && !rval.negative) {
+  } else if ((!negative && rval.negative) || (negative && !rval.negative)) {
     return Integer(MulStrings(value, rval.value), true);
   }
+  return Integer();
 }
 
 Integer& Integer::operator=(const Integer& rval) {
