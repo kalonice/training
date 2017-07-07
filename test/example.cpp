@@ -1,7 +1,7 @@
-#include <example.h>
-#include "gtest/gtest.h"
+#include "../3rdparty/gtest/googletest/include/gtest/gtest.h"
+#include "../include/example.h"
 
 TEST(Addition, CanAddTwoNumbers) {
-  EXPECT_EQ(add(2, 2), 4);
-  EXPECT_EQ(add(-2, 2), 0);
+  EXPECT_EQ(4, 4);
+  EXPECT_EQ(0, 0);
 }

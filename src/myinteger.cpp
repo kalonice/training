@@ -1,6 +1,6 @@
 #include <string>
 #include <algorithm>
-#include "myinteger.h"
+#include "../include/myinteger.h"
 
 Integer::Integer(std::string new_value, bool new_negate) :
         value(new_value), negative(new_negate) {
@@ -9,11 +9,11 @@ Integer::Integer(std::string new_value, bool new_negate) :
   }
 }
 
-std::string Integer::GetString() {
+std::string Integer::GetString() const {
   return this->value;
 }
 
-bool Integer::IsNegative() {
+bool Integer::IsNegative() const {
   return negative;
 }
 
@@ -39,9 +39,9 @@ std::string Integer::AddStrings(const std::string& num1, const std::string& num2
     if (tmp > '9') {
       up = '1';
       tmp = static_cast<char>(tmp - 10);
-    }
-    else
+    } else {
       up = '0';
+    }
     res = tmp + res;
     i--;
     j--;
@@ -110,16 +110,16 @@ std::string Integer::DedStrings(const std::string& num1, const std::string& num2
     if (tmp < '0') {
       up = 1;
       tmp = static_cast<char>(tmp + 10);
-    }
-    else
+    } else {
       up = 0;
+    }
     res += tmp;
     i--;
     j--;
   }
   int t = static_cast<int>(res.size()) - 1;
   int resize_res;
-  while(t >= 0 && res[t] == '0') {
+  while (t >= 0 && res[t] == '0') {
     ++resize_res;
     --t;
   }
@@ -235,7 +235,7 @@ Integer& Integer::operator*=(const Integer& rval) {
 
 std::ostream& operator<<(std::ostream& outStream, const Integer& rval) {
   std::string s;
-  if (rval.negative){
+  if (rval.negative) {
     s += "-";
   }
   s += rval.value;

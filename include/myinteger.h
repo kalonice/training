@@ -1,5 +1,5 @@
-#ifndef INCLUDE_MY_INTEGER_H
-#define INCLUDE_MY_INTEGER_H
+#ifndef C__CPP_PROJECT_HAAR_TRAINING_INCLUDE_MYINTEGER_H_
+#define C__CPP_PROJECT_HAAR_TRAINING_INCLUDE_MYINTEGER_H_
 #include <string>
 
 class BaseElement {
@@ -10,7 +10,7 @@ class BaseElement {
 
 class Integer : public BaseElement {
  public:
-  Integer(std::string = "0", bool = false);  // value is string, false = positive value
+  explicit Integer(std::string = "0", bool = false);  // value is string, false = positive value
   Integer operator+(const Integer&);
   Integer operator-(const Integer&);
   Integer operator*(const Integer&);
@@ -23,8 +23,8 @@ class Integer : public BaseElement {
   bool operator>(const Integer&);
   bool operator<(const Integer&);
   friend std::ostream& operator<<(std::ostream&, const Integer&);
-  bool IsNegative();
-  std::string GetString();
+  bool IsNegative() const;
+  std::string GetString() const;
   ~Integer() {}
 
  private:
@@ -41,9 +41,9 @@ class Integer : public BaseElement {
 
 class Operation : public BaseElement {
  public:
-  Operation(std::string = "+");
+  explicit Operation(std::string = "+");
  private:
   std::string operation;
 };
 
-#endif  // INCLUDE_MY_INTEGER_H
+#endif  // C__CPP_PROJECT_HAAR_TRAINING_INCLUDE_MYINTEGER_H_
