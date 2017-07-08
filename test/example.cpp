@@ -1,7 +1,25 @@
+#include <vector>
+#include <iostream>
+#include <list>
+#include <random>
 #include "../3rdparty/gtest/googletest/include/gtest/gtest.h"
-#include "../include/example.h"
+#include "../include/myinteger.h"
+#include "../include/worker.h"
 
-TEST(Addition, CanAddTwoNumbers) {
-  EXPECT_EQ(4, 4);
-  EXPECT_EQ(0, 0);
+
+TEST(RPN, Is_RPN_Correct) {
+  std::string exp = "-12+8-2*6 *( 9-3*6)*5-7+(2-1) +  99";
+  std::string exp2;
+  exp2.resize(100);
+  std::random_device rnd;
+  for (size_t i = 0; i < 100; ++i){
+    char c = static_cast<char>(rnd() % 10 + '0');
+    exp2[i] = c;
+  }
+  Worker work(exp);
+  std::list<Integer> output(10);
+  work.CalcExpression(output.begin());
+  auto s = work.GetRPN();
+  std::string out1 = output.begin()->GetValue();
+  EXPECT_EQ(out1, "629");
 }

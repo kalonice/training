@@ -1,15 +1,22 @@
 #include <string>
 #include <algorithm>
+#include <iostream>
 #include "../include/myinteger.h"
 
 Integer::Integer(std::string new_value, bool new_negate) :
-        value(new_value), negative(new_negate) {
+                 value(new_value), negative(new_negate) {
   if (negative) {
     minus = '-';
   }
 }
-
-std::string Integer::GetString() const {
+/*
+Integer::Integer(const Integer& new_obj) {
+  value = new_obj.value;
+  negative = new_obj.negative;
+  minus = new_obj.minus;
+}
+*/
+std::string Integer::GetValue() const {
   return this->value;
 }
 
@@ -147,7 +154,7 @@ bool Integer::CmpStrings(const std::string& num1, const std::string& num2) {
   }
   return false;
 }
-
+/*
 bool Integer::operator==(const Integer& rval) {
   return value == rval.value;
 }
@@ -163,7 +170,7 @@ bool Integer::operator>(const Integer& rval) {
 bool Integer::operator<(const Integer& rval) {
   return CmpStrings(rval.value, value);
 }
-
+*/
 Integer Integer::operator+(const Integer& rval) {
   if (!negative && !rval.negative) {                       // if both values are positives
     return Integer(AddStrings(value, rval.value), false);
@@ -215,6 +222,8 @@ Integer Integer::operator*(const Integer& rval) {
 
 Integer& Integer::operator=(const Integer& rval) {
   value = rval.value;
+  negative = rval.negative;
+  minus = rval.minus;
   return *this;
 }
 
@@ -241,4 +250,46 @@ std::ostream& operator<<(std::ostream& outStream, const Integer& rval) {
   s += rval.value;
   outStream << s;
   return outStream;
+}
+
+bool Integer::isOperation() const {
+  return false;
+}
+
+void Integer::Print() const {
+  if (negative) {
+    std::cout << '-';
+  }
+  std::cout << value;
+}
+
+Operation::Operation(std::string new_operator) : Integer(new_operator) {}
+
+Operation::Operation(char new_operator) {
+  std::string str = "";
+  str += new_operator;
+  value = str;
+}
+
+Operation::Operation(const Operation& new_obj) : Integer(new_obj.value) {}
+
+bool Operation::isOperation() const {
+  return true;
+}
+
+std::string Operation::getValue() const {
+  return value;
+}
+
+bool Operation::operator==(const std::string& rval) const {
+  return value == rval;
+}
+
+bool Operation::operator!=(const std::string& rval) const {
+  return value != rval;
+}
+
+Operation& Operation::operator=(const Operation& new_obj) {
+  value = new_obj.value;
+  return *this;
 }

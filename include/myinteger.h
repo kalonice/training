@@ -1,16 +1,11 @@
-#ifndef C__CPP_PROJECT_HAAR_TRAINING_INCLUDE_MYINTEGER_H_
-#define C__CPP_PROJECT_HAAR_TRAINING_INCLUDE_MYINTEGER_H_
+#ifndef INCLUDE_MYINTEGER_H_
+#define INCLUDE_MYINTEGER_H_
 #include <string>
 
-class BaseElement {
- public:
-  BaseElement() {}
-  virtual ~BaseElement() {}
-};
-
-class Integer : public BaseElement {
+class Integer {
  public:
   explicit Integer(std::string = "0", bool = false);  // value is string, false = positive value
+  // explicit Integer(const Integer&);
   Integer operator+(const Integer&);
   Integer operator-(const Integer&);
   Integer operator*(const Integer&);
@@ -18,17 +13,21 @@ class Integer : public BaseElement {
   Integer& operator+=(const Integer&);
   Integer& operator-=(const Integer&);
   Integer& operator*=(const Integer&);
-  bool operator==(const Integer&);
-  bool operator!=(const Integer&);
-  bool operator>(const Integer&);
-  bool operator<(const Integer&);
+  // bool operator==(const Integer&);
+  // bool operator!=(const Integer&);
+  // bool operator>(const Integer&);
+  // bool operator<(const Integer&);
   friend std::ostream& operator<<(std::ostream&, const Integer&);
   bool IsNegative() const;
-  std::string GetString() const;
-  ~Integer() {}
+  virtual bool isOperation() const;
+  virtual std::string GetValue() const;
+  virtual void Print() const;
+  virtual ~Integer() {}
+
+ protected:
+  std::string value;
 
  private:
-  std::string value;
   bool negative;
   char minus;
   std::string AddStrings(const std::string&, const std::string&);
@@ -37,13 +36,17 @@ class Integer : public BaseElement {
   bool CmpStrings(const std::string&, const std::string&);  // true if l > r
 };
 
-
-
-class Operation : public BaseElement {
+class Operation : public Integer {
  public:
   explicit Operation(std::string = "+");
- private:
-  std::string operation;
+  explicit Operation(const Operation&);
+  explicit Operation(char = '+');
+  bool isOperation() const;
+  std::string getValue() const;
+  bool operator==(const std::string&) const;
+  bool operator!=(const std::string&) const;
+  Operation& operator=(const Operation&);
+  ~Operation() {}
 };
 
-#endif  // C__CPP_PROJECT_HAAR_TRAINING_INCLUDE_MYINTEGER_H_
+#endif  // INCLUDE_MYINTEGER_H_
