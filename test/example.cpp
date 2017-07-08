@@ -2,6 +2,7 @@
 #include <iostream>
 #include <list>
 #include <random>
+#include <string>
 #include "../3rdparty/gtest/googletest/include/gtest/gtest.h"
 #include "../include/myinteger.h"
 #include "../include/worker.h"
@@ -12,7 +13,7 @@ TEST(RPN, Is_RPN_Correct) {
   std::string exp2;
   exp2.resize(100);
   std::random_device rnd;
-  for (size_t i = 0; i < 100; ++i){
+  for (size_t i = 0; i < 100; ++i) {
     char c = static_cast<char>(rnd() % 10 + '0');
     exp2[i] = c;
   }
