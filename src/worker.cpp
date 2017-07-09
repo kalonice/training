@@ -9,55 +9,60 @@
 Worker::Worker(std::string new_expression) : expression(new_expression),
                                              expression_is_valid(true), overflow(false),
                                              rpn(0), result("0") {
-  rpn.reserve(expression.size());
 }
 
-int Worker::Priority(const Operation& input_operator) {
-  if (input_operator.GetValue() == "*") {
-    return 2;
-  } else if (input_operator.GetValue() == "-" || input_operator.GetValue() == "+") {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-bool Worker::IsExpresionValid() {
+bool Worker::IsExpresionValid() const {
   return expression_is_valid;
 }
 
-bool Worker::IsOverflow(const Integer& obj) {
-  return obj.GetValue().size() > max_length_of_int;
+bool Worker::IsOverflow(const Integer& obj) const {
+  return obj.GetValue().size() > maxIntLength;
 }
 
-bool Worker::IsOverflow(const std::string& obj) {
-  return obj.size() > max_length_of_int;
+bool Worker::IsOverflow(const std::string& obj) const {
+  return obj.size() > maxIntLength;
 }
 
-void Worker::ProcessOperationStack(const Operation& input_operator) {
-  if (input_operator.GetValue() == ")") {
-    while (!operations.empty() && operations.top() != "(") {
-      rpn.push_back(new Operation(operations.top()));
+static bool is_math_operation (const char& symbol_operation) {
+  if (symbol_operation == '+' || symbol_operation == '-' || symbol_operation == '*') {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+static bool is_paranthesis (const char& symbol_operation) {
+  if (symbol_operation == '(' || symbol_operation == ')') {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void Worker::putOperationToRpn() {
+  auto operation_from_stack = operations.top();
+  auto operation_into_base = std::dynamic_pointer_cast<IBaseElement>(operation_from_stack);
+  rpn.push_back(operation_into_base);
+}
+
+void Worker::ProcessOperationStack(std::shared_ptr<IOperation> input_operator, const char& symbol_operation) {
+  if (symbol_operation == ')') {
+    while (!operations.empty() && operations.top()->getPriority() != 100) {   // пока не встретится '('
+      putOperationToRpn();
       operations.pop();
     }
     if (operations.empty()) {
       expression_is_valid = false;
       return;
     }
-    if (!operations.empty() && operations.top() == "(") {
+    if (!operations.empty() && operations.top()->getPriority() == 100) {  // если встретилась '('
       operations.pop();
     }
-  } else if (input_operator == "(") {
-    operations.push(Operation(input_operator));
-  } else if (input_operator == "*") {
-    while (!operations.empty() && Priority(input_operator) <= Priority(operations.top())) {
-      rpn.push_back(new Operation(operations.top()));
-      operations.pop();
-    }
+  } else if (symbol_operation == '(') {
     operations.push(input_operator);
-  } else if (input_operator == "-" || input_operator == "+") {
-    while (!operations.empty() && Priority(input_operator) <= Priority(operations.top())) {
-      rpn.push_back(new Operation(operations.top()));
+  } else {
+    while (!operations.empty() && input_operator->getPriority() <= operations.top()->getPriority()) {
+      putOperationToRpn();
       operations.pop();
     }
     operations.push(input_operator);
@@ -65,31 +70,26 @@ void Worker::ProcessOperationStack(const Operation& input_operator) {
 }
 
 void Worker::Calculate() {
-  if (rpn.size() == 1 && rpn[0]->isOperation() == false) {
-    result = *rpn[0];
-    return;
-  }
   std::stack<Integer*> calc;
   for (size_t i = 0; i < rpn.size(); ++i) {
-    if (!rpn[i]->isOperation()) {
-      calc.push(rpn[i]);
-    } else {
-      Integer* num1 = calc.top();
-      calc.pop();
-      if (rpn[i]->GetValue() == "*")
-        *calc.top() *= *num1;
-      else if (rpn[i]->GetValue() == "+")
-        *calc.top() += *num1;
-      else if (rpn[i]->GetValue() == "-")
-        *calc.top() -= *num1;
-    }
+    rpn[i]->apply(&calc);
   }
-  result = *calc.top();
+  if (calc.empty()) {
+    expression_is_valid = false;
+  } else {
+    result = *calc.top();
+  }
+
   if (IsOverflow(result)) {
     overflow = true;
     result = Integer("Overflow");
   }
-  calc.pop();
+
+  calc.pop();  // Если осталось больше одного элемента, то ошибка
+
+  if (!calc.empty()) {
+    expression_is_valid = false;
+  }
 }
 
 void Worker::ParseExpression() {
@@ -98,45 +98,45 @@ void Worker::ParseExpression() {
   size_t i = 0;
 
   while (i < expression.size() && expression_is_valid) {
-    while (i < expression.size() && expression[i] == ' ') {
+    while (i < expression.size() && isspace(expression[i])) {  // skip spaces
       ++i;
     }
 
     // check the first symbol in expression
     if (i < expression.size() && first_symbol) {
-      if ((expression[i] != '-' && expression[i] != '(') && (expression[i] < '0' || expression[i] > '9')) {
+      if (expression[i] != '-' && expression[i] != '(' && !isdigit(expression[i])) {
         expression_is_valid = false;
         break;
       } else if (expression[i] == '-') {
-        rpn.push_back(new Integer("0"));
+        rpn.push_back(std::make_shared<Integer>());
         prev_is_operation = false;
-        first_symbol = false;
-      } else {
-        first_symbol = false;
       }
+      first_symbol = false;
     }
 
     // check if operation is valid
-    if (i < expression.size() - 1 && !prev_is_operation &&
-        (expression[i] == '+' || expression[i] == '-' || expression[i] == '*')) {
+    if (i < expression.size() - 1 && !prev_is_operation && is_math_operation(expression[i])) {
       prev_is_operation = true;
-      ProcessOperationStack(Operation(expression[i]));
+      ProcessOperationStack(IOperation::create(expression[i]), expression[i]);
       ++i;
-    } else if (i < expression.size() - 1 && prev_is_operation &&
-               (expression[i] == '+' || expression[i] == '-' || expression[i] == '*')) {
+    } else if (i < expression.size() - 1 && prev_is_operation && is_math_operation(expression[i])) {
+      expression_is_valid = false;
+      break;
+    } else if (i < expression.size() - 1 && !is_math_operation(expression[i]) &&
+                                            !is_paranthesis(expression[i]) &&
+                                            !isdigit(expression[i])) {
       expression_is_valid = false;
       break;
     }
 
-    // chek the last symbol
-    if (i == expression.size() - 1 &&
-        ((expression[i] < '0' || expression[i] > '9') && expression[i] != ')')) {
+    // check the last symbol
+    if (i == expression.size() - 1 && !isdigit(expression[i]) && expression[i] != ')') {
       expression_is_valid = false;
       break;
     }
 
-    if (expression[i] == '(' || expression[i] == ')') {
-      ProcessOperationStack(Operation(expression[i]));
+    if (is_paranthesis(expression[i])) {
+      ProcessOperationStack(IOperation::create(expression[i]), expression[i]);
       if (expression_is_valid == false) {
         break;
       }
@@ -144,7 +144,7 @@ void Worker::ParseExpression() {
     }
 
     std::string tmp_num;
-    while (i < expression.size() && expression[i] >= '0' && expression[i] <= '9') {
+    while (i < expression.size() && isdigit(expression[i])) {
       tmp_num += expression[i];
       ++i;
     }
@@ -155,7 +155,7 @@ void Worker::ParseExpression() {
     }
 
     if (tmp_num.size() > 0 && prev_is_operation) {
-      rpn.push_back(new Integer(tmp_num));
+      rpn.push_back(std::make_shared<Integer>(tmp_num));
       prev_is_operation = false;
       tmp_num = "";
     } else if (tmp_num.size() > 0 && !prev_is_operation) {
@@ -165,11 +165,11 @@ void Worker::ParseExpression() {
   }
 
   while (!operations.empty()) {
-    if (operations.top().GetValue() == "(" || operations.top().GetValue() == ")") {
+    if (operations.top()->getPriority() == 100) {
       expression_is_valid = false;
       break;
     }
-    rpn.push_back(new Operation(operations.top()));
+    putOperationToRpn();
     operations.pop();
   }
 
@@ -184,16 +184,7 @@ void Worker::ParseExpression() {
   }
 }
 
-void Worker::CalcExpression(std::list<Integer>::iterator output_result) {
+std::unique_ptr<Integer> Worker::CalcExpression() {
   ParseExpression();
-  *output_result = result;
-}
-
-std::string Worker::GetRPN() {
-  std:: string output_rpn;
-  for (size_t i = 0; i < rpn.size(); ++i) {
-    output_rpn += rpn[i]->GetValue();
-    output_rpn += " ";
-  }
-  return output_rpn;
+  return std::make_unique<Integer>(result);
 }

@@ -1,11 +1,32 @@
 #ifndef INCLUDE_MYINTEGER_H_
 #define INCLUDE_MYINTEGER_H_
 #include <string>
+#include <stack>
+#include <memory>
 
-class Integer {
+// const char* ZERO_INTEGER_ = "0";
+const char MINUS = '-';
+
+class Integer;
+
+class IBaseElement {
  public:
-  explicit Integer(std::string = "0", bool = false);  // value is string, false = positive value
-  // explicit Integer(const Integer&);
+  virtual bool apply(std::stack<Integer*>* rpn_stack) = 0;
+  virtual ~IBaseElement() {}
+};
+
+class IOperation : public IBaseElement {
+ public:
+  static std::shared_ptr<IOperation> create(const char& operation);
+  virtual int getPriority() const = 0;  // step 100,200,300...
+  virtual ~IOperation() {}
+};
+
+class Integer : public IBaseElement {
+ public:
+  explicit Integer(const std::string& val = "0", const bool& is_negative = false);
+  Integer(const Integer&);
+  Integer(const Integer&&);
   Integer operator+(const Integer&);
   Integer operator-(const Integer&);
   Integer operator*(const Integer&);
@@ -13,40 +34,55 @@ class Integer {
   Integer& operator+=(const Integer&);
   Integer& operator-=(const Integer&);
   Integer& operator*=(const Integer&);
-  // bool operator==(const Integer&);
-  // bool operator!=(const Integer&);
-  // bool operator>(const Integer&);
-  // bool operator<(const Integer&);
+  bool apply(std::stack<Integer*>* rpn_stack) override;
+  bool operator==(const Integer&) const;
+  bool operator!=(const Integer&) const;
+  bool operator>(const Integer&) const;
+  bool operator<(const Integer&) const;
   friend std::ostream& operator<<(std::ostream&, const Integer&);
-  bool IsNegative() const;
-  virtual bool isOperation() const;
-  virtual std::string GetValue() const;
-  virtual void Print() const;
-  virtual ~Integer() {}
-
- protected:
-  std::string value;
+  bool IsNegative() const;  // ?
+  std::string GetValue() const;
+  void Print() const;
+  ~Integer() {}
 
  private:
-  bool negative;
-  char minus;
-  std::string AddStrings(const std::string&, const std::string&);
-  std::string MulStrings(const std::string&, const std::string&);
-  std::string DedStrings(const std::string&, const std::string&);
-  bool CmpStrings(const std::string&, const std::string&);  // true if l > r
+  std::string value;  // хранимое число
+  bool is_negative;   // флаг отрицательного числа
 };
 
-class Operation : public Integer {
+class OperationPlus : public IOperation {
  public:
-  explicit Operation(std::string = "+");
-  explicit Operation(const Operation&);
-  explicit Operation(char = '+');
-  bool isOperation() const;
-  std::string getValue() const;
-  bool operator==(const std::string&) const;
-  bool operator!=(const std::string&) const;
-  Operation& operator=(const Operation&);
-  ~Operation() {}
+  int getPriority() const override;
+  bool apply(std::stack<Integer*>* rpn_stack) override;
+  ~OperationPlus() {}
+};
+
+class OperationMinus : public IOperation {
+ public:
+  int getPriority() const override;
+  bool apply(std::stack<Integer*>* rpn_stack) override;
+  ~OperationMinus() {}
+};
+
+class OperationMultiple : public IOperation {
+ public:
+  int getPriority() const override;
+  bool apply(std::stack<Integer*>* rpn_stack) override;
+  ~OperationMultiple() {}
+};
+
+class OperationParenthOpen : public IOperation {
+ public:
+  int getPriority() const override;
+  bool apply(std::stack<Integer*>* rpn_stack) override;
+  ~OperationParenthOpen() {}
+};
+
+class OperationParenthClose : public IOperation {
+ public:
+  int getPriority() const override;
+  bool apply(std::stack<Integer*>* rpn_stack) override;
+  ~OperationParenthClose() {}
 };
 
 #endif  // INCLUDE_MYINTEGER_H_
