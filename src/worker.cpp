@@ -23,7 +23,7 @@ bool Worker::IsOverflow(const std::string& obj) const {
   return obj.size() > maxIntLength;
 }
 
-static bool is_math_operation (const char& symbol_operation) {
+static bool is_math_operation(const char& symbol_operation) {
   if (symbol_operation == '+' || symbol_operation == '-' || symbol_operation == '*') {
     return true;
   } else {
@@ -31,7 +31,7 @@ static bool is_math_operation (const char& symbol_operation) {
   }
 }
 
-static bool is_paranthesis (const char& symbol_operation) {
+static bool is_paranthesis(const char& symbol_operation) {
   if (symbol_operation == '(' || symbol_operation == ')') {
     return true;
   } else {
