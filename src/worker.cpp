@@ -6,7 +6,9 @@
 #include "../include/myinteger.h"
 #include "../include/worker.h"
 
-Worker::Worker(std::string new_expression) : expression(new_expression),
+const size_t maxIntLength = 1048576;
+
+Worker::Worker(const std::string& new_expression) : expression(new_expression),
                                              expression_is_valid(true), overflow(false),
                                              rpn(0), result("0") {
 }
@@ -39,17 +41,15 @@ static bool is_paranthesis(const char& symbol_operation) {
   }
 }
 
-void Worker::putOperationToRpn() {
-  auto operation_from_stack = operations.top();
-  auto operation_into_base = std::dynamic_pointer_cast<IBaseElement>(operation_from_stack);
-  rpn.push_back(operation_into_base);
+void Worker::moveOperationToRpn() {
+  rpn.push_back(std::move(operations.top()));
+  operations.pop();
 }
 
-void Worker::ProcessOperationStack(std::shared_ptr<IOperation> input_operator, const char& symbol_operation) {
+void Worker::ProcessOperationStack(std::unique_ptr<IOperation> input_operator, const char& symbol_operation) {
   if (symbol_operation == ')') {
     while (!operations.empty() && operations.top()->getPriority() != 100) {   // пока не встретится '('
-      putOperationToRpn();
-      operations.pop();
+      moveOperationToRpn();
     }
     if (operations.empty()) {
       expression_is_valid = false;
@@ -59,13 +59,12 @@ void Worker::ProcessOperationStack(std::shared_ptr<IOperation> input_operator, c
       operations.pop();
     }
   } else if (symbol_operation == '(') {
-    operations.push(input_operator);
+    operations.push(std::move(input_operator));
   } else {
     while (!operations.empty() && input_operator->getPriority() <= operations.top()->getPriority()) {
-      putOperationToRpn();
-      operations.pop();
+      moveOperationToRpn();
     }
-    operations.push(input_operator);
+    operations.push(std::move(input_operator));
   }
 }
 
@@ -85,7 +84,7 @@ void Worker::Calculate() {
     result = Integer("Overflow");
   }
 
-  calc.pop();  // Если осталось больше одного элемента, то ошибка
+  calc.pop();  // TODO(dsid): Если осталось больше одного элемента, то ошибка
 
   if (!calc.empty()) {
     expression_is_valid = false;
@@ -108,21 +107,21 @@ void Worker::ParseExpression() {
         expression_is_valid = false;
         break;
       } else if (expression[i] == '-') {
-        rpn.push_back(std::make_shared<Integer>());
+        rpn.push_back(std::make_unique<Integer>());
         prev_is_operation = false;
       }
       first_symbol = false;
     }
 
     // check if operation is valid
-    if (i < expression.size() - 1 && !prev_is_operation && is_math_operation(expression[i])) {
+    if (i + 1 < expression.size() && !prev_is_operation && is_math_operation(expression[i])) {
       prev_is_operation = true;
       ProcessOperationStack(IOperation::create(expression[i]), expression[i]);
       ++i;
-    } else if (i < expression.size() - 1 && prev_is_operation && is_math_operation(expression[i])) {
+    } else if (i + 1 < expression.size() && prev_is_operation && is_math_operation(expression[i])) {
       expression_is_valid = false;
       break;
-    } else if (i < expression.size() - 1 && !is_math_operation(expression[i]) &&
+    } else if (i + 1 < expression.size() && !is_math_operation(expression[i]) &&
                                             !is_paranthesis(expression[i]) &&
                                             !isdigit(expression[i])) {
       expression_is_valid = false;
@@ -137,7 +136,7 @@ void Worker::ParseExpression() {
 
     if (is_paranthesis(expression[i])) {
       ProcessOperationStack(IOperation::create(expression[i]), expression[i]);
-      if (expression_is_valid == false) {
+      if (!expression_is_valid) {
         break;
       }
       ++i;
@@ -155,7 +154,7 @@ void Worker::ParseExpression() {
     }
 
     if (tmp_num.size() > 0 && prev_is_operation) {
-      rpn.push_back(std::make_shared<Integer>(tmp_num));
+      rpn.push_back(std::make_unique<Integer>(std::move(tmp_num)));
       prev_is_operation = false;
       tmp_num = "";
     } else if (tmp_num.size() > 0 && !prev_is_operation) {
@@ -169,11 +168,10 @@ void Worker::ParseExpression() {
       expression_is_valid = false;
       break;
     }
-    putOperationToRpn();
-    operations.pop();
+    moveOperationToRpn();
   }
 
-  if (expression_is_valid == false) {
+  if (!expression_is_valid) {
     result = Integer("Invalid expression");
     return;
   } else if (overflow) {

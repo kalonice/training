@@ -1,11 +1,9 @@
 #ifndef INCLUDE_MYINTEGER_H_
 #define INCLUDE_MYINTEGER_H_
-#include <string>
-#include <stack>
-#include <memory>
 
-// const char* ZERO_INTEGER_ = "0";
-const char MINUS = '-';
+#include <memory>
+#include <stack>
+#include <string>
 
 class Integer;
 
@@ -17,12 +15,13 @@ class IBaseElement {
 
 class IOperation : public IBaseElement {
  public:
-  static std::shared_ptr<IOperation> create(const char& operation);
+  static std::unique_ptr<IOperation> create(const char& operation);
   virtual int getPriority() const = 0;  // step 100,200,300...
+  // virtual char getSymbol() const = 0;
   virtual ~IOperation() {}
 };
 
-class Integer : public IBaseElement {
+class Integer : public IBaseElement {  // TODO(dsid): Rename to BigInteger
  public:
   explicit Integer(const std::string& val = "0", const bool& is_negative = false);
   Integer(const Integer&);
@@ -40,7 +39,7 @@ class Integer : public IBaseElement {
   bool operator>(const Integer&) const;
   bool operator<(const Integer&) const;
   friend std::ostream& operator<<(std::ostream&, const Integer&);
-  bool IsNegative() const;  // ?
+  bool IsNegative() const;
   std::string GetValue() const;
   void Print() const;
   ~Integer() {}

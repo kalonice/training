@@ -6,6 +6,8 @@
 #include <utility>
 #include "../include/myinteger.h"
 
+const char MINUS = '-';
+
 Integer::Integer(const std::string& new_value, const bool& new_negate) : value(new_value), is_negative(new_negate) {}
 
 Integer::Integer(const Integer& new_obj) {
@@ -14,7 +16,7 @@ Integer::Integer(const Integer& new_obj) {
 }
 
 Integer::Integer(const Integer&& new_obj) {
-  *this = std::move(new_obj);
+  *this = std::move(new_obj);  // TODO(dsid): Т.е. тебе надо реализовать Integer& operator=(const Integer&&); или реализовать самому перемещение тут
 }
 
 std::string Integer::GetValue() const {
@@ -327,22 +329,22 @@ bool OperationParenthClose::apply(std::stack<Integer*>*) {
   return true;
 }
 
-std::shared_ptr<IOperation> IOperation::create(const char& operation) {
+std::unique_ptr<IOperation> IOperation::create(const char& operation) {
   switch (operation) {
     case '+': {
-      return std::make_shared<OperationPlus>();
+      return std::make_unique<OperationPlus>();
     }
     case '-': {
-      return std::make_shared<OperationMinus>();
+      return std::make_unique<OperationMinus>();
     }
     case '*': {
-      return std::make_shared<OperationMultiple>();
+      return std::make_unique<OperationMultiple>();
     }
     case '(': {
-      return std::make_shared<OperationParenthOpen>();
+      return std::make_unique<OperationParenthOpen>();
     }
     case ')': {
-      return std::make_shared<OperationParenthClose>();
+      return std::make_unique<OperationParenthClose>();
     }
     default: {
       return nullptr;
