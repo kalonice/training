@@ -6,23 +6,8 @@
 #include "../include/myinteger.h"
 #include "../include/worker.h"
 
-const size_t maxIntLength = 1048576;
-
 Worker::Worker(const std::string& new_expression) : expression(new_expression),
-                                             expression_is_valid(true), overflow(false),
-                                             rpn(0), result("0") {
-}
-
-bool Worker::IsExpresionValid() const {
-  return expression_is_valid;
-}
-
-bool Worker::IsOverflow(const Integer& obj) const {
-  return obj.GetValue().size() > maxIntLength;
-}
-
-bool Worker::IsOverflow(const std::string& obj) const {
-  return obj.size() > maxIntLength;
+                                             expression_is_valid(true), overflow(false) {
 }
 
 static bool is_math_operation(const char& symbol_operation) {
@@ -33,7 +18,7 @@ static bool is_math_operation(const char& symbol_operation) {
   }
 }
 
-static bool is_paranthesis(const char& symbol_operation) {
+static bool is_parenthesis(const char &symbol_operation) {
   if (symbol_operation == '(' || symbol_operation == ')') {
     return true;
   } else {
@@ -68,26 +53,16 @@ void Worker::ProcessOperationStack(std::unique_ptr<IOperation> input_operator, c
   }
 }
 
-void Worker::Calculate() {
+std::unique_ptr<Integer> Worker::Calculate() {
   std::stack<Integer*> calc;
   for (size_t i = 0; i < rpn.size(); ++i) {
     rpn[i]->apply(&calc);
   }
-  if (calc.empty()) {
-    expression_is_valid = false;
+
+  if (calc.size() != 1 || calc.top()->IsOverflow()) {
+    return std::make_unique<Integer>();
   } else {
-    result = *calc.top();
-  }
-
-  if (IsOverflow(result)) {
-    overflow = true;
-    result = Integer("Overflow");
-  }
-
-  calc.pop();  // TODO(dsid): Если осталось больше одного элемента, то ошибка
-
-  if (!calc.empty()) {
-    expression_is_valid = false;
+    return std::make_unique<Integer>(*calc.top());
   }
 }
 
@@ -122,7 +97,7 @@ void Worker::ParseExpression() {
       expression_is_valid = false;
       break;
     } else if (i + 1 < expression.size() && !is_math_operation(expression[i]) &&
-                                            !is_paranthesis(expression[i]) &&
+                                            !is_parenthesis(expression[i]) &&
                                             !isdigit(expression[i])) {
       expression_is_valid = false;
       break;
@@ -134,7 +109,7 @@ void Worker::ParseExpression() {
       break;
     }
 
-    if (is_paranthesis(expression[i])) {
+    if (is_parenthesis(expression[i])) {
       ProcessOperationStack(IOperation::create(expression[i]), expression[i]);
       if (!expression_is_valid) {
         break;
@@ -148,7 +123,7 @@ void Worker::ParseExpression() {
       ++i;
     }
 
-    if (IsOverflow(tmp_num)) {
+    if (Integer::IsOverflow(tmp_num)) {
       overflow = true;
       break;
     }
@@ -170,19 +145,13 @@ void Worker::ParseExpression() {
     }
     moveOperationToRpn();
   }
-
-  if (!expression_is_valid) {
-    result = Integer("Invalid expression");
-    return;
-  } else if (overflow) {
-    result = Integer("Overflow");
-    return;
-  } else {
-    Calculate();
-  }
 }
 
 std::unique_ptr<Integer> Worker::CalcExpression() {
   ParseExpression();
-  return std::make_unique<Integer>(result);
+  if (!expression_is_valid || overflow) {
+    return std::make_unique<Integer>();
+  }
+
+  return std::move(Calculate());
 }

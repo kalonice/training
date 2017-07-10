@@ -17,7 +17,6 @@ class IOperation : public IBaseElement {
  public:
   static std::unique_ptr<IOperation> create(const char& operation);
   virtual int getPriority() const = 0;  // step 100,200,300...
-  // virtual char getSymbol() const = 0;
   virtual ~IOperation() {}
 };
 
@@ -41,8 +40,11 @@ class Integer : public IBaseElement {  // TODO(dsid): Rename to BigInteger
   friend std::ostream& operator<<(std::ostream&, const Integer&);
   bool IsNegative() const;
   std::string GetValue() const;
+  bool IsOverflow() const;
   void Print() const;
   ~Integer() {}
+
+  static bool IsOverflow(const std::string&);
 
  private:
   std::string value;  // хранимое число

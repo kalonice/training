@@ -7,6 +7,7 @@
 #include "../include/myinteger.h"
 
 const char MINUS = '-';
+const size_t maxIntLength = 1048576;
 
 Integer::Integer(const std::string& new_value, const bool& new_negate) : value(new_value), is_negative(new_negate) {}
 
@@ -17,6 +18,14 @@ Integer::Integer(const Integer& new_obj) {
 
 Integer::Integer(const Integer&& new_obj) {
   *this = std::move(new_obj);  // TODO(dsid): Т.е. тебе надо реализовать Integer& operator=(const Integer&&); или реализовать самому перемещение тут
+}
+
+bool Integer::IsOverflow() const {
+  return value.size() > maxIntLength;
+}
+
+bool Integer::IsOverflow(const std::string& str) {
+  return str.size() > maxIntLength;
 }
 
 std::string Integer::GetValue() const {
