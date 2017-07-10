@@ -1,8 +1,9 @@
-#include <string>
-#include <vector>
-#include <stack>
-#include <memory>
 #include <list>
+#include <memory>
+#include <string>
+#include <stack>
+#include <vector>
+#include <utility>
 #include "../include/myinteger.h"
 #include "../include/worker.h"
 
@@ -32,18 +33,18 @@ void Worker::moveOperationToRpn() {
 }
 
 void Worker::ProcessOperationStack(std::unique_ptr<IOperation> input_operator) {
-  bool is_open_parenthesis = input_operator->getPriority() == OperationPriority::OPEN_PARANTHESIS;
-  bool is_close_parenthesis = input_operator->getPriority() == OperationPriority::CLOSE_PARANTHESIS;
+  bool is_open_parenthesis = input_operator->getPriority() == OperationPriority::OPEN_PARENTHESIS;
+  bool is_close_parenthesis = input_operator->getPriority() == OperationPriority::CLOSE_PARENTHESIS;
 
   if (is_close_parenthesis) {
-    while (!operations.empty() && operations.top()->getPriority() != OperationPriority::OPEN_PARANTHESIS) {
+    while (!operations.empty() && operations.top()->getPriority() != OperationPriority::OPEN_PARENTHESIS) {
       moveOperationToRpn();
     }
     if (operations.empty()) {
       expression_is_valid = false;
       return;
     }
-    if (!operations.empty() && operations.top()->getPriority() == OperationPriority::OPEN_PARANTHESIS) {
+    if (!operations.empty() && operations.top()->getPriority() == OperationPriority::OPEN_PARENTHESIS) {
       operations.pop();
     }
   } else if (is_open_parenthesis) {

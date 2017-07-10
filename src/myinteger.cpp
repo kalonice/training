@@ -17,7 +17,8 @@ Integer::Integer(const Integer& new_obj) {
 }
 
 Integer::Integer(const Integer&& new_obj) {
-  *this = std::move(new_obj);  // TODO(dsid): Т.е. тебе надо реализовать Integer& operator=(const Integer&&); или реализовать самому перемещение тут
+// TODO(dsid): Т.е. тебе надо реализовать Integer& operator=(const Integer&&); или реализовать самому перемещение тут
+  *this = std::move(new_obj);
 }
 
 bool Integer::IsOverflow() const {
@@ -321,7 +322,7 @@ bool OperationMultiple::apply(std::stack<Integer*>* rpn_stack) {
 // OperationParenth' methods implementation
 
 OperationPriority OperationParenthOpen::getPriority() const {
-  return OperationPriority::OPEN_PARANTHESIS;
+  return OperationPriority::OPEN_PARENTHESIS;
 }
 
 bool OperationParenthOpen::apply(std::stack<Integer*>*) {
@@ -331,7 +332,7 @@ bool OperationParenthOpen::apply(std::stack<Integer*>*) {
 // OperationParenth' methods implementation
 
 OperationPriority OperationParenthClose::getPriority() const {
-  return OperationPriority::CLOSE_PARANTHESIS;
+  return OperationPriority::CLOSE_PARENTHESIS;
 }
 
 bool OperationParenthClose::apply(std::stack<Integer*>*) {

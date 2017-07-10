@@ -11,8 +11,8 @@ enum OperationPriority {
   MINUS = 200,
   PLUS = 200,
   MULTIPLY = 300,
-  OPEN_PARANTHESIS = 100,
-  CLOSE_PARANTHESIS = 50
+  OPEN_PARENTHESIS = 100,
+  CLOSE_PARENTHESIS = 50
 };
 
 class IBaseElement {
