@@ -7,6 +7,14 @@
 
 class Integer;
 
+enum OperationPriority {
+  MINUS = 200,
+  PLUS = 200,
+  MULTIPLY = 300,
+  OPEN_PARANTHESIS = 100,
+  CLOSE_PARANTHESIS = 50
+};
+
 class IBaseElement {
  public:
   virtual bool apply(std::stack<Integer*>* rpn_stack) = 0;
@@ -16,7 +24,7 @@ class IBaseElement {
 class IOperation : public IBaseElement {
  public:
   static std::unique_ptr<IOperation> create(const char& operation);
-  virtual int getPriority() const = 0;  // step 100,200,300...
+  virtual OperationPriority getPriority() const = 0;
   virtual ~IOperation() {}
 };
 
@@ -53,35 +61,35 @@ class Integer : public IBaseElement {  // TODO(dsid): Rename to BigInteger
 
 class OperationPlus : public IOperation {
  public:
-  int getPriority() const override;
+  OperationPriority getPriority() const override;
   bool apply(std::stack<Integer*>* rpn_stack) override;
   ~OperationPlus() {}
 };
 
 class OperationMinus : public IOperation {
  public:
-  int getPriority() const override;
+  OperationPriority getPriority() const override;
   bool apply(std::stack<Integer*>* rpn_stack) override;
   ~OperationMinus() {}
 };
 
 class OperationMultiple : public IOperation {
  public:
-  int getPriority() const override;
+  OperationPriority getPriority() const override;
   bool apply(std::stack<Integer*>* rpn_stack) override;
   ~OperationMultiple() {}
 };
 
 class OperationParenthOpen : public IOperation {
  public:
-  int getPriority() const override;
+  OperationPriority getPriority() const override;
   bool apply(std::stack<Integer*>* rpn_stack) override;
   ~OperationParenthOpen() {}
 };
 
 class OperationParenthClose : public IOperation {
  public:
-  int getPriority() const override;
+  OperationPriority getPriority() const override;
   bool apply(std::stack<Integer*>* rpn_stack) override;
   ~OperationParenthClose() {}
 };

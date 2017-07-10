@@ -18,7 +18,7 @@ class Worker {
   void ParseExpression();  // создание обратной польской записи и анализ допустимости выражения
   std::unique_ptr<Integer> Calculate();  // получение результата из сформированной обратной польской записи
 
-  void ProcessOperationStack(std::unique_ptr<IOperation> cur_operation, const char& sym_operation);  // Обработка стека
+  void ProcessOperationStack(std::unique_ptr<IOperation> cur_operation);  // Обработка стека
   void moveOperationToRpn();
 
   std::string expression;  // входное выражение

@@ -6,7 +6,7 @@
 #include <utility>
 #include "../include/myinteger.h"
 
-const char MINUS = '-';
+const char MINUS_SYMBOL = '-';
 const size_t maxIntLength = 1048576;
 
 Integer::Integer(const std::string& new_value, const bool& new_negate) : value(new_value), is_negative(new_negate) {}
@@ -269,7 +269,7 @@ std::ostream& operator<<(std::ostream& outStream, const Integer& rval) {
 
 void Integer::Print() const {
   if (is_negative) {
-    std::cout << MINUS;
+    std::cout << MINUS_SYMBOL;
   }
   std::cout << value;
 }
@@ -281,8 +281,8 @@ bool Integer::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationPlus' methods implementation
 
-int OperationPlus::getPriority() const {
-  return 200;
+OperationPriority OperationPlus::getPriority() const {
+  return OperationPriority::PLUS;
 }
 
 bool OperationPlus::apply(std::stack<Integer*>* rpn_stack) {
@@ -294,8 +294,8 @@ bool OperationPlus::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationMinus' methods implementation
 
-int OperationMinus::getPriority() const {
-  return 200;
+OperationPriority OperationMinus::getPriority() const {
+  return OperationPriority::MINUS;
 }
 
 bool OperationMinus::apply(std::stack<Integer*>* rpn_stack) {
@@ -307,8 +307,8 @@ bool OperationMinus::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationMultiple' methods implementation
 
-int OperationMultiple::getPriority() const {
-  return 300;
+OperationPriority OperationMultiple::getPriority() const {
+  return OperationPriority::MULTIPLY;
 }
 
 bool OperationMultiple::apply(std::stack<Integer*>* rpn_stack) {
@@ -320,8 +320,8 @@ bool OperationMultiple::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationParenth' methods implementation
 
-int OperationParenthOpen::getPriority() const {
-  return 100;
+OperationPriority OperationParenthOpen::getPriority() const {
+  return OperationPriority::OPEN_PARANTHESIS;
 }
 
 bool OperationParenthOpen::apply(std::stack<Integer*>*) {
@@ -330,8 +330,8 @@ bool OperationParenthOpen::apply(std::stack<Integer*>*) {
 
 // OperationParenth' methods implementation
 
-int OperationParenthClose::getPriority() const {
-  return 50;
+OperationPriority OperationParenthClose::getPriority() const {
+  return OperationPriority::CLOSE_PARANTHESIS;
 }
 
 bool OperationParenthClose::apply(std::stack<Integer*>*) {
