@@ -1,26 +1,14 @@
-#include <string>
-#include <vector>
-#include <stack>
-#include <memory>
 #include <list>
+#include <memory>
+#include <string>
+#include <stack>
+#include <vector>
+#include <utility>
 #include "../include/myinteger.h"
 #include "../include/worker.h"
 
-Worker::Worker(std::string new_expression) : expression(new_expression),
-                                             expression_is_valid(true), overflow(false),
-                                             rpn(0), result("0") {
-}
-
-bool Worker::IsExpresionValid() const {
-  return expression_is_valid;
-}
-
-bool Worker::IsOverflow(const Integer& obj) const {
-  return obj.GetValue().size() > maxIntLength;
-}
-
-bool Worker::IsOverflow(const std::string& obj) const {
-  return obj.size() > maxIntLength;
+Worker::Worker(const std::string& new_expression) : expression(new_expression),
+                                             expression_is_valid(true), overflow(false) {
 }
 
 static bool is_math_operation(const char& symbol_operation) {
@@ -31,7 +19,7 @@ static bool is_math_operation(const char& symbol_operation) {
   }
 }
 
-static bool is_paranthesis(const char& symbol_operation) {
+static bool is_parenthesis(const char &symbol_operation) {
   if (symbol_operation == '(' || symbol_operation == ')') {
     return true;
   } else {
@@ -39,56 +27,46 @@ static bool is_paranthesis(const char& symbol_operation) {
   }
 }
 
-void Worker::putOperationToRpn() {
-  auto operation_from_stack = operations.top();
-  auto operation_into_base = std::dynamic_pointer_cast<IBaseElement>(operation_from_stack);
-  rpn.push_back(operation_into_base);
+void Worker::moveOperationToRpn() {
+  rpn.push_back(std::move(operations.top()));
+  operations.pop();
 }
 
-void Worker::ProcessOperationStack(std::shared_ptr<IOperation> input_operator, const char& symbol_operation) {
-  if (symbol_operation == ')') {
-    while (!operations.empty() && operations.top()->getPriority() != 100) {   // пока не встретится '('
-      putOperationToRpn();
-      operations.pop();
+void Worker::ProcessOperationStack(std::unique_ptr<IOperation> input_operator) {
+  bool is_open_parenthesis = input_operator->getPriority() == OperationPriority::OPEN_PARENTHESIS;
+  bool is_close_parenthesis = input_operator->getPriority() == OperationPriority::CLOSE_PARENTHESIS;
+
+  if (is_close_parenthesis) {
+    while (!operations.empty() && operations.top()->getPriority() != OperationPriority::OPEN_PARENTHESIS) {
+      moveOperationToRpn();
     }
     if (operations.empty()) {
       expression_is_valid = false;
       return;
     }
-    if (!operations.empty() && operations.top()->getPriority() == 100) {  // если встретилась '('
+    if (!operations.empty() && operations.top()->getPriority() == OperationPriority::OPEN_PARENTHESIS) {
       operations.pop();
     }
-  } else if (symbol_operation == '(') {
-    operations.push(input_operator);
+  } else if (is_open_parenthesis) {
+    operations.push(std::move(input_operator));
   } else {
     while (!operations.empty() && input_operator->getPriority() <= operations.top()->getPriority()) {
-      putOperationToRpn();
-      operations.pop();
+      moveOperationToRpn();
     }
-    operations.push(input_operator);
+    operations.push(std::move(input_operator));
   }
 }
 
-void Worker::Calculate() {
+std::unique_ptr<Integer> Worker::Calculate() {
   std::stack<Integer*> calc;
   for (size_t i = 0; i < rpn.size(); ++i) {
     rpn[i]->apply(&calc);
   }
-  if (calc.empty()) {
-    expression_is_valid = false;
+
+  if (calc.size() != 1 || calc.top()->IsOverflow()) {
+    return std::make_unique<Integer>();
   } else {
-    result = *calc.top();
-  }
-
-  if (IsOverflow(result)) {
-    overflow = true;
-    result = Integer("Overflow");
-  }
-
-  calc.pop();  // Если осталось больше одного элемента, то ошибка
-
-  if (!calc.empty()) {
-    expression_is_valid = false;
+    return std::make_unique<Integer>(*calc.top());
   }
 }
 
@@ -108,22 +86,22 @@ void Worker::ParseExpression() {
         expression_is_valid = false;
         break;
       } else if (expression[i] == '-') {
-        rpn.push_back(std::make_shared<Integer>());
+        rpn.push_back(std::make_unique<Integer>());
         prev_is_operation = false;
       }
       first_symbol = false;
     }
 
     // check if operation is valid
-    if (i < expression.size() - 1 && !prev_is_operation && is_math_operation(expression[i])) {
+    if (i + 1 < expression.size() && !prev_is_operation && is_math_operation(expression[i])) {
       prev_is_operation = true;
-      ProcessOperationStack(IOperation::create(expression[i]), expression[i]);
+      ProcessOperationStack(IOperation::create(expression[i]));
       ++i;
-    } else if (i < expression.size() - 1 && prev_is_operation && is_math_operation(expression[i])) {
+    } else if (i + 1 < expression.size() && prev_is_operation && is_math_operation(expression[i])) {
       expression_is_valid = false;
       break;
-    } else if (i < expression.size() - 1 && !is_math_operation(expression[i]) &&
-                                            !is_paranthesis(expression[i]) &&
+    } else if (i + 1 < expression.size() && !is_math_operation(expression[i]) &&
+                                            !is_parenthesis(expression[i]) &&
                                             !isdigit(expression[i])) {
       expression_is_valid = false;
       break;
@@ -135,9 +113,9 @@ void Worker::ParseExpression() {
       break;
     }
 
-    if (is_paranthesis(expression[i])) {
-      ProcessOperationStack(IOperation::create(expression[i]), expression[i]);
-      if (expression_is_valid == false) {
+    if (is_parenthesis(expression[i])) {
+      ProcessOperationStack(IOperation::create(expression[i]));
+      if (!expression_is_valid) {
         break;
       }
       ++i;
@@ -149,13 +127,13 @@ void Worker::ParseExpression() {
       ++i;
     }
 
-    if (IsOverflow(tmp_num)) {
+    if (Integer::IsOverflow(tmp_num)) {
       overflow = true;
       break;
     }
 
     if (tmp_num.size() > 0 && prev_is_operation) {
-      rpn.push_back(std::make_shared<Integer>(tmp_num));
+      rpn.push_back(std::make_unique<Integer>(std::move(tmp_num)));
       prev_is_operation = false;
       tmp_num = "";
     } else if (tmp_num.size() > 0 && !prev_is_operation) {
@@ -169,22 +147,15 @@ void Worker::ParseExpression() {
       expression_is_valid = false;
       break;
     }
-    putOperationToRpn();
-    operations.pop();
-  }
-
-  if (expression_is_valid == false) {
-    result = Integer("Invalid expression");
-    return;
-  } else if (overflow) {
-    result = Integer("Overflow");
-    return;
-  } else {
-    Calculate();
+    moveOperationToRpn();
   }
 }
 
 std::unique_ptr<Integer> Worker::CalcExpression() {
   ParseExpression();
-  return std::make_unique<Integer>(result);
+  if (!expression_is_valid || overflow) {
+    return std::make_unique<Integer>();
+  }
+
+  return std::move(Calculate());
 }

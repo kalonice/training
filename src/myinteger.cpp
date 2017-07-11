@@ -6,6 +6,9 @@
 #include <utility>
 #include "../include/myinteger.h"
 
+const char MINUS_SYMBOL = '-';
+const size_t maxIntLength = 1048576;
+
 Integer::Integer(const std::string& new_value, const bool& new_negate) : value(new_value), is_negative(new_negate) {}
 
 Integer::Integer(const Integer& new_obj) {
@@ -14,7 +17,16 @@ Integer::Integer(const Integer& new_obj) {
 }
 
 Integer::Integer(const Integer&& new_obj) {
+// TODO(dsid): Т.е. тебе надо реализовать Integer& operator=(const Integer&&); или реализовать самому перемещение тут
   *this = std::move(new_obj);
+}
+
+bool Integer::IsOverflow() const {
+  return value.size() > maxIntLength;
+}
+
+bool Integer::IsOverflow(const std::string& str) {
+  return str.size() > maxIntLength;
 }
 
 std::string Integer::GetValue() const {
@@ -258,7 +270,7 @@ std::ostream& operator<<(std::ostream& outStream, const Integer& rval) {
 
 void Integer::Print() const {
   if (is_negative) {
-    std::cout << MINUS;
+    std::cout << MINUS_SYMBOL;
   }
   std::cout << value;
 }
@@ -270,8 +282,8 @@ bool Integer::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationPlus' methods implementation
 
-int OperationPlus::getPriority() const {
-  return 200;
+OperationPriority OperationPlus::getPriority() const {
+  return OperationPriority::PLUS;
 }
 
 bool OperationPlus::apply(std::stack<Integer*>* rpn_stack) {
@@ -283,8 +295,8 @@ bool OperationPlus::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationMinus' methods implementation
 
-int OperationMinus::getPriority() const {
-  return 200;
+OperationPriority OperationMinus::getPriority() const {
+  return OperationPriority::MINUS;
 }
 
 bool OperationMinus::apply(std::stack<Integer*>* rpn_stack) {
@@ -296,8 +308,8 @@ bool OperationMinus::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationMultiple' methods implementation
 
-int OperationMultiple::getPriority() const {
-  return 300;
+OperationPriority OperationMultiple::getPriority() const {
+  return OperationPriority::MULTIPLY;
 }
 
 bool OperationMultiple::apply(std::stack<Integer*>* rpn_stack) {
@@ -309,8 +321,8 @@ bool OperationMultiple::apply(std::stack<Integer*>* rpn_stack) {
 
 // OperationParenth' methods implementation
 
-int OperationParenthOpen::getPriority() const {
-  return 100;
+OperationPriority OperationParenthOpen::getPriority() const {
+  return OperationPriority::OPEN_PARENTHESIS;
 }
 
 bool OperationParenthOpen::apply(std::stack<Integer*>*) {
@@ -319,30 +331,30 @@ bool OperationParenthOpen::apply(std::stack<Integer*>*) {
 
 // OperationParenth' methods implementation
 
-int OperationParenthClose::getPriority() const {
-  return 50;
+OperationPriority OperationParenthClose::getPriority() const {
+  return OperationPriority::CLOSE_PARENTHESIS;
 }
 
 bool OperationParenthClose::apply(std::stack<Integer*>*) {
   return true;
 }
 
-std::shared_ptr<IOperation> IOperation::create(const char& operation) {
+std::unique_ptr<IOperation> IOperation::create(const char& operation) {
   switch (operation) {
     case '+': {
-      return std::make_shared<OperationPlus>();
+      return std::make_unique<OperationPlus>();
     }
     case '-': {
-      return std::make_shared<OperationMinus>();
+      return std::make_unique<OperationMinus>();
     }
     case '*': {
-      return std::make_shared<OperationMultiple>();
+      return std::make_unique<OperationMultiple>();
     }
     case '(': {
-      return std::make_shared<OperationParenthOpen>();
+      return std::make_unique<OperationParenthOpen>();
     }
     case ')': {
-      return std::make_shared<OperationParenthClose>();
+      return std::make_unique<OperationParenthClose>();
     }
     default: {
       return nullptr;
