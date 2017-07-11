@@ -1,22 +1,26 @@
-#ifndef INCLUDE_WORKER_H_
-#define INCLUDE_WORKER_H_
+#ifndef INCLUDE_CALCULATOR_H_
+#define INCLUDE_CALCULATOR_H_
 #include <string>
 #include <vector>
 #include <stack>
 #include <iostream>
 #include <list>
 #include <memory>
-#include "../include/myinteger.h"
+#include "../include/mybiginteger.h"
 
-class Worker {
+namespace mycalc {
+
+class Calculator {
  public:
-  explicit Worker(const std::string& input_expression);
-  ~Worker() {}
-  std::unique_ptr<Integer> CalcExpression();  // вычисленеие выражения и запись результата
+  explicit Calculator(const std::string &input_expression);
+
+  ~Calculator() {}
+
+  std::unique_ptr<BigInteger> CalcExpression();  // вычисленеие выражения и запись результата
 
  private:
   void ParseExpression();  // создание обратной польской записи и анализ допустимости выражения
-  std::unique_ptr<Integer> Calculate();  // получение результата из сформированной обратной польской записи
+  std::unique_ptr<BigInteger> Calculate();  // получение результата из сформированной обратной польской записи
 
   void ProcessOperationStack(std::unique_ptr<IOperation> cur_operation);  // Обработка стека
   void moveOperationToRpn();
@@ -28,4 +32,6 @@ class Worker {
   std::stack<std::unique_ptr<IOperation>> operations;  // стек математических операций для обратной польской записи
 };
 
-#endif  // INCLUDE_WORKER_H_
+}  // namespace mycalc
+
+#endif  // INCLUDE_CALCULATOR_H_

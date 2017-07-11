@@ -1,17 +1,19 @@
-#include <list>
 #include <memory>
-#include <string>
 #include <stack>
 #include <vector>
+#include <string>
 #include <utility>
-#include "../include/myinteger.h"
-#include "../include/worker.h"
+#include "../include/mybiginteger.h"
+#include "../include/mathoperations.h"
+#include "../include/calculator.h"
 
-Worker::Worker(const std::string& new_expression) : expression(new_expression),
-                                             expression_is_valid(true), overflow(false) {
+namespace mycalc {
+
+Calculator::Calculator(const std::string &new_expression) : expression(new_expression),
+                                                            expression_is_valid(true), overflow(false) {
 }
 
-static bool is_math_operation(const char& symbol_operation) {
+static bool is_math_operation(const char &symbol_operation) {
   if (symbol_operation == '+' || symbol_operation == '-' || symbol_operation == '*') {
     return true;
   } else {
@@ -27,12 +29,20 @@ static bool is_parenthesis(const char &symbol_operation) {
   }
 }
 
-void Worker::moveOperationToRpn() {
+static bool is_open_parenthesis(const char &symbol_operation) {
+  if (symbol_operation == '(') {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void Calculator::moveOperationToRpn() {
   rpn.push_back(std::move(operations.top()));
   operations.pop();
 }
 
-void Worker::ProcessOperationStack(std::unique_ptr<IOperation> input_operator) {
+void Calculator::ProcessOperationStack(std::unique_ptr<IOperation> input_operator) {
   bool is_open_parenthesis = input_operator->getPriority() == OperationPriority::OPEN_PARENTHESIS;
   bool is_close_parenthesis = input_operator->getPriority() == OperationPriority::CLOSE_PARENTHESIS;
 
@@ -57,20 +67,20 @@ void Worker::ProcessOperationStack(std::unique_ptr<IOperation> input_operator) {
   }
 }
 
-std::unique_ptr<Integer> Worker::Calculate() {
-  std::stack<Integer*> calc;
+std::unique_ptr<BigInteger> Calculator::Calculate() {
+  std::stack<BigInteger *> calc;
   for (size_t i = 0; i < rpn.size(); ++i) {
     rpn[i]->apply(&calc);
   }
 
   if (calc.size() != 1 || calc.top()->IsOverflow()) {
-    return std::make_unique<Integer>();
+    return std::make_unique<BigInteger>();
   } else {
-    return std::make_unique<Integer>(*calc.top());
+    return std::make_unique<BigInteger>(*calc.top());
   }
 }
 
-void Worker::ParseExpression() {
+void Calculator::ParseExpression() {
   bool first_symbol = true;
   bool prev_is_operation = true;
   size_t i = 0;
@@ -86,7 +96,7 @@ void Worker::ParseExpression() {
         expression_is_valid = false;
         break;
       } else if (expression[i] == '-') {
-        rpn.push_back(std::make_unique<Integer>());
+        rpn.push_back(std::make_unique<BigInteger>());
         prev_is_operation = false;
       }
       first_symbol = false;
@@ -101,8 +111,8 @@ void Worker::ParseExpression() {
       expression_is_valid = false;
       break;
     } else if (i + 1 < expression.size() && !is_math_operation(expression[i]) &&
-                                            !is_parenthesis(expression[i]) &&
-                                            !isdigit(expression[i])) {
+               !is_parenthesis(expression[i]) &&
+               !isdigit(expression[i])) {
       expression_is_valid = false;
       break;
     }
@@ -118,6 +128,9 @@ void Worker::ParseExpression() {
       if (!expression_is_valid) {
         break;
       }
+      if (is_open_parenthesis(expression[i])) {
+        first_symbol = true;
+      }
       ++i;
     }
 
@@ -127,15 +140,16 @@ void Worker::ParseExpression() {
       ++i;
     }
 
-    if (Integer::IsOverflow(tmp_num)) {
+    if (BigInteger::IsOverflow(tmp_num)) {
       overflow = true;
       break;
     }
 
     if (tmp_num.size() > 0 && prev_is_operation) {
-      rpn.push_back(std::make_unique<Integer>(std::move(tmp_num)));
+      rpn.push_back(std::make_unique<BigInteger>(std::move(tmp_num)));
       prev_is_operation = false;
       tmp_num = "";
+      first_symbol = false;
     } else if (tmp_num.size() > 0 && !prev_is_operation) {
       expression_is_valid = false;
       break;
@@ -143,7 +157,8 @@ void Worker::ParseExpression() {
   }
 
   while (!operations.empty()) {
-    if (operations.top()->getPriority() == 100) {
+    if (operations.top()->getPriority() == OperationPriority::OPEN_PARENTHESIS ||
+        operations.top()->getPriority() == OperationPriority::CLOSE_PARENTHESIS) {
       expression_is_valid = false;
       break;
     }
@@ -151,11 +166,15 @@ void Worker::ParseExpression() {
   }
 }
 
-std::unique_ptr<Integer> Worker::CalcExpression() {
+std::unique_ptr<BigInteger> Calculator::CalcExpression() {
   ParseExpression();
-  if (!expression_is_valid || overflow) {
-    return std::make_unique<Integer>();
+  if (!expression_is_valid) {
+    return std::make_unique<BigInteger>("Invalid expression");
+  } else if (overflow) {
+    return std::make_unique<BigInteger>("Overflow");
   }
 
   return std::move(Calculate());
 }
+
+}  // namespace mycalc
