@@ -1,5 +1,5 @@
-#ifndef INCLUDE_MYINTEGER_H_
-#define INCLUDE_MYINTEGER_H_
+#ifndef INCLUDE_MYBIGINTEGER_H_
+#define INCLUDE_MYBIGINTEGER_H_
 
 #include <memory>
 #include <stack>
@@ -48,4 +48,4 @@ class BigInteger : public IBaseElement {
 
 }  // namespace mycalc
 
-#endif  // INCLUDE_MYINTEGER_H_
+#endif  // INCLUDE_MYBIGINTEGER_H_
