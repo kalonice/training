@@ -4,8 +4,8 @@
 #include <memory>
 #include <stack>
 #include <utility>
-#include "../include/mybiginteger.h"
-#include "../include/mathoperations.h"
+#include "./mybiginteger.h"
+#include "./mathoperations.h"
 
 namespace mycalc {
 

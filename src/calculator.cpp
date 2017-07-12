@@ -68,12 +68,12 @@ void Calculator::ProcessOperationStack(std::unique_ptr<IOperation> input_operato
 }
 
 std::unique_ptr<BigInteger> Calculator::Calculate() {
-  std::stack<BigInteger *> calc;
+  std::stack<BigInteger*> calc;
   for (size_t i = 0; i < rpn.size(); ++i) {
     rpn[i]->apply(&calc);
   }
 
-  if (calc.size() != 1 || calc.top()->IsOverflow()) {
+  if (calc.size() != 1 || calc.top()->isOverflow()) {
     return std::make_unique<BigInteger>();
   } else {
     return std::make_unique<BigInteger>(*calc.top());
@@ -118,7 +118,7 @@ void Calculator::ParseExpression() {
     }
 
     // check the last symbol
-    if (i == expression.size() - 1 && !isdigit(expression[i]) && expression[i] != ')') {
+    if (i + 1 == expression.size() && !isdigit(expression[i]) && expression[i] != ')') {
       expression_is_valid = false;
       break;
     }
@@ -140,7 +140,7 @@ void Calculator::ParseExpression() {
       ++i;
     }
 
-    if (BigInteger::IsOverflow(tmp_num)) {
+    if (BigInteger::isOverflow(tmp_num)) {
       overflow = true;
       break;
     }
@@ -168,10 +168,8 @@ void Calculator::ParseExpression() {
 
 std::unique_ptr<BigInteger> Calculator::CalcExpression() {
   ParseExpression();
-  if (!expression_is_valid) {
-    return std::make_unique<BigInteger>("Invalid expression");
-  } else if (overflow) {
-    return std::make_unique<BigInteger>("Overflow");
+  if (!expression_is_valid || overflow) {
+    return nullptr;
   }
 
   return std::move(Calculate());

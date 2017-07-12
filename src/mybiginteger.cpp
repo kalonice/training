@@ -4,7 +4,7 @@
 #include <memory>
 #include <stack>
 #include <utility>
-#include "../include/mybiginteger.h"
+#include "./mybiginteger.h"
 
 namespace mycalc {
 
@@ -24,30 +24,30 @@ BigInteger::BigInteger(const BigInteger &&new_obj) {
   is_negative = new_obj.is_negative;
 }
 
-bool BigInteger::IsOverflow() const {
+bool BigInteger::isOverflow() const {
   return value.size() > maxIntLength;
 }
 
-bool BigInteger::IsOverflow(const std::string &str) {
+bool BigInteger::isOverflow(const std::string &str) {
   return str.size() > maxIntLength;
 }
 
 std::string BigInteger::GetValue() const {
-  if (IsNegative()) {
+  if (isNegative()) {
     return "-" + value;
   } else {
   return value;
   }
 }
 
-bool BigInteger::IsNegative() const {
+bool BigInteger::isNegative() const {
   return is_negative;
 }
 
 static std::string AddStrings(const std::string &num1, const std::string &num2) {
   char addition_one = '0';
   std::string res;
-  char term1, term2, help_term;
+  char term1 = 0, term2 = 0, help_term = 0;
   int i = static_cast<int>(num1.size()) - 1, j = static_cast<int>(num2.size()) - 1;
 
   while (i >= 0 || j >= 0) {
@@ -121,7 +121,8 @@ static std::string SubStrings(const std::string &num1, const std::string &num2) 
   char up = 0;
   std::string res;
   char term1, term2, help_term;
-  int i = static_cast<int>(num1.size()) - 1, j = static_cast<int>(num2.size()) - 1;
+  int i = static_cast<int>(num1.size()) - 1;
+  int j = static_cast<int>(num2.size()) - 1;
 
   while (i >= 0 || j >= 0) {
     if (i < 0) {
@@ -149,7 +150,7 @@ static std::string SubStrings(const std::string &num1, const std::string &num2) 
     j--;
   }
   int t = static_cast<int>(res.size()) - 1;
-  int resize_res;
+  int resize_res = 0;
   while (t >= 0 && res[t] == '0') {
     ++resize_res;
     --t;
@@ -180,32 +181,48 @@ static bool CmpStrings(const std::string &num1, const std::string &num2) {
 }
 
 bool BigInteger::operator==(const BigInteger &rval) const {
-  return value == rval.value;
+  return (value == rval.value && is_negative == rval.is_negative);
 }
 
 bool BigInteger::operator!=(const BigInteger &rval) const {
-  return value != rval.value;
+  return (value != rval.value || is_negative != rval.is_negative);
 }
 
 bool BigInteger::operator>(const BigInteger &rval) const {
-  return CmpStrings(value, rval.value);
+  if (is_negative && rval.is_negative) {
+    return CmpStrings(rval.value, value);
+  } else if (is_negative && !rval.is_negative) {
+    return false;
+  } else if (!is_negative && rval.is_negative) {
+    return true;
+  } else {
+    return CmpStrings(value, rval.value);
+  }
 }
 
 bool BigInteger::operator<(const BigInteger &rval) const {
-  return CmpStrings(rval.value, value);
+  if (is_negative && rval.is_negative) {
+    return CmpStrings(value, rval.value);
+  } else if (is_negative && !rval.is_negative) {
+    return true;
+  } else if (!is_negative && rval.is_negative) {
+    return false;
+  } else {
+    return CmpStrings(rval.value, value);
+  }
 }
 
 BigInteger BigInteger::operator+(const BigInteger &rval) {
   if (!is_negative && !rval.is_negative) {                       // if both values are positives
     return BigInteger(AddStrings(value, rval.value), false);
   } else if (!is_negative && rval.is_negative) {                 // if only rval is is_negative
-    if (*this > rval) {                                          // if value > rval.value
+    if (CmpStrings(value, rval.value)) {                         // if value > rval.value
       return BigInteger(SubStrings(value, rval.value), false);
     } else {                                                     // if value < rval.value
       return BigInteger(SubStrings(rval.value, value), true);
     }
   } else if (is_negative && !rval.is_negative) {                 // if only value is is_negative
-    if (*this > rval) {                                          // if value > rval.value
+    if (CmpStrings(value, rval.value)) {                         // if value > rval.value
       return BigInteger(SubStrings(value, rval.value), true);
     } else {                                                     // if value < rval.value
       return BigInteger(SubStrings(rval.value, value), false);
@@ -217,7 +234,7 @@ BigInteger BigInteger::operator+(const BigInteger &rval) {
 
 BigInteger BigInteger::operator-(const BigInteger &rval) {
   if (!is_negative && !rval.is_negative) {                       // if both values are positives
-    if (*this > rval) {
+    if (CmpStrings(value, rval.value)) {
       return BigInteger(SubStrings(value, rval.value), false);
     } else {
       return BigInteger(SubStrings(rval.value, value), true);
@@ -227,7 +244,7 @@ BigInteger BigInteger::operator-(const BigInteger &rval) {
   } else if (is_negative && !rval.is_negative) {                 // if only value is is_negative
     return BigInteger(AddStrings(value, rval.value), true);
   } else {                                                       // if both values are negatives
-    if (*this > rval) {                                          // if value > rval.value
+    if (CmpStrings(value, rval.value)) {                         // if value > rval.value
       return BigInteger(SubStrings(value, rval.value), true);
     } else {                                                     // if value < rval.value
       return BigInteger(SubStrings(rval.value, value), false);
@@ -244,23 +261,23 @@ BigInteger BigInteger::operator*(const BigInteger &rval) {
   return BigInteger();
 }
 
-BigInteger &BigInteger::operator=(const BigInteger &rval) {
+BigInteger& BigInteger::operator=(const BigInteger &rval) {
   value = rval.value;
   is_negative = rval.is_negative;
   return *this;
 }
 
-BigInteger &BigInteger::operator+=(const BigInteger &rval) {
+BigInteger& BigInteger::operator+=(const BigInteger &rval) {
   *this = *this + rval;
   return *this;
 }
 
-BigInteger &BigInteger::operator-=(const BigInteger &rval) {
+BigInteger& BigInteger::operator-=(const BigInteger &rval) {
   *this = *this - rval;
   return *this;
 }
 
-BigInteger &BigInteger::operator*=(const BigInteger &rval) {
+BigInteger& BigInteger::operator*=(const BigInteger &rval) {
   *this = *this * rval;
   return *this;
 }
@@ -282,7 +299,7 @@ void BigInteger::Print() const {
   std::cout << value;
 }
 
-bool BigInteger::apply(std::stack<BigInteger *> *rpn_stack) {
+bool BigInteger::apply(std::stack<BigInteger*>* rpn_stack) {
   rpn_stack->push(this);
   return true;
 }
