@@ -4,7 +4,7 @@
 #include <memory>
 #include <stack>
 #include <utility>
-#include "../include/mybiginteger.h"
+#include "./mybiginteger.h"
 
 namespace mycalc {
 
@@ -47,7 +47,7 @@ bool BigInteger::isNegative() const {
 static std::string AddStrings(const std::string &num1, const std::string &num2) {
   char addition_one = '0';
   std::string res;
-  char term1, term2, help_term;
+  char term1 = 0, term2 = 0, help_term = 0;
   int i = static_cast<int>(num1.size()) - 1, j = static_cast<int>(num2.size()) - 1;
 
   while (i >= 0 || j >= 0) {
@@ -150,7 +150,7 @@ static std::string SubStrings(const std::string &num1, const std::string &num2) 
     j--;
   }
   int t = static_cast<int>(res.size()) - 1;
-  int resize_res;
+  int resize_res = 0;
   while (t >= 0 && res[t] == '0') {
     ++resize_res;
     --t;
@@ -216,13 +216,13 @@ BigInteger BigInteger::operator+(const BigInteger &rval) {
   if (!is_negative && !rval.is_negative) {                       // if both values are positives
     return BigInteger(AddStrings(value, rval.value), false);
   } else if (!is_negative && rval.is_negative) {                 // if only rval is is_negative
-    if (CmpStrings(value, rval.value)) {                                          // if value > rval.value
+    if (CmpStrings(value, rval.value)) {                         // if value > rval.value
       return BigInteger(SubStrings(value, rval.value), false);
     } else {                                                     // if value < rval.value
       return BigInteger(SubStrings(rval.value, value), true);
     }
   } else if (is_negative && !rval.is_negative) {                 // if only value is is_negative
-    if (CmpStrings(value, rval.value)) {                                          // if value > rval.value
+    if (CmpStrings(value, rval.value)) {                         // if value > rval.value
       return BigInteger(SubStrings(value, rval.value), true);
     } else {                                                     // if value < rval.value
       return BigInteger(SubStrings(rval.value, value), false);
@@ -244,7 +244,7 @@ BigInteger BigInteger::operator-(const BigInteger &rval) {
   } else if (is_negative && !rval.is_negative) {                 // if only value is is_negative
     return BigInteger(AddStrings(value, rval.value), true);
   } else {                                                       // if both values are negatives
-    if (CmpStrings(value, rval.value)) {                                          // if value > rval.value
+    if (CmpStrings(value, rval.value)) {                         // if value > rval.value
       return BigInteger(SubStrings(value, rval.value), true);
     } else {                                                     // if value < rval.value
       return BigInteger(SubStrings(rval.value, value), false);
@@ -261,23 +261,23 @@ BigInteger BigInteger::operator*(const BigInteger &rval) {
   return BigInteger();
 }
 
-BigInteger &BigInteger::operator=(const BigInteger &rval) {
+BigInteger& BigInteger::operator=(const BigInteger &rval) {
   value = rval.value;
   is_negative = rval.is_negative;
   return *this;
 }
 
-BigInteger &BigInteger::operator+=(const BigInteger &rval) {
+BigInteger& BigInteger::operator+=(const BigInteger &rval) {
   *this = *this + rval;
   return *this;
 }
 
-BigInteger &BigInteger::operator-=(const BigInteger &rval) {
+BigInteger& BigInteger::operator-=(const BigInteger &rval) {
   *this = *this - rval;
   return *this;
 }
 
-BigInteger &BigInteger::operator*=(const BigInteger &rval) {
+BigInteger& BigInteger::operator*=(const BigInteger &rval) {
   *this = *this * rval;
   return *this;
 }
@@ -299,7 +299,7 @@ void BigInteger::Print() const {
   std::cout << value;
 }
 
-bool BigInteger::apply(std::stack<BigInteger *> *rpn_stack) {
+bool BigInteger::apply(std::stack<BigInteger*>* rpn_stack) {
   rpn_stack->push(this);
   return true;
 }

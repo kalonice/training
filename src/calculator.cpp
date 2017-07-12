@@ -68,10 +68,8 @@ void Calculator::ProcessOperationStack(std::unique_ptr<IOperation> input_operato
 }
 
 std::unique_ptr<BigInteger> Calculator::Calculate() {
-  std::stack<BigInteger *> calc;
+  std::stack<BigInteger*> calc;
   for (size_t i = 0; i < rpn.size(); ++i) {
-    std::cout << i << std::endl;
-    fflush(stdout);
     rpn[i]->apply(&calc);
   }
 

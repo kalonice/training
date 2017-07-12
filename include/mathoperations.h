@@ -5,7 +5,7 @@
 #include <memory>
 #include <stack>
 #include <utility>
-#include "../include/mybiginteger.h"
+#include "./mybiginteger.h"
 
 namespace mycalc {
 
@@ -25,8 +25,8 @@ enum OperationPriority {
 
 /**
  * Интерфейс базового класса для математических операций.
- * - Метод create() возвращает std::unique_ptr<IOperation> математичекой
- * операции, заданной соответствующим символом.
+ * - Метод create() - фабрика создания математичекой операции, заданной
+ * соответствующим символом.
  * - Метод getPriority() возвращает приоритет соответствующей операции
  */
 
