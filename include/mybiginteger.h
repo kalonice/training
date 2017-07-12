@@ -33,13 +33,13 @@ class BigInteger : public IBaseElement {
   bool operator>(const BigInteger&) const;
   bool operator<(const BigInteger&) const;
   friend std::ostream& operator<<(std::ostream&, const BigInteger&);
-  bool IsNegative() const;
+  bool isNegative() const;
   std::string GetValue() const;
-  bool IsOverflow() const;
+  bool isOverflow() const;
   void Print() const;
   ~BigInteger() {}
 
-  static bool IsOverflow(const std::string&);
+  static bool isOverflow(const std::string &);
 
  private:
   std::string value;  // хранимое число

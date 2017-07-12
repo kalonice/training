@@ -13,9 +13,7 @@ namespace mycalc {
 class Calculator {
  public:
   explicit Calculator(const std::string &input_expression);
-
   ~Calculator() {}
-
   std::unique_ptr<BigInteger> CalcExpression();  // вычисленеие выражения и запись результата
 
  private:
