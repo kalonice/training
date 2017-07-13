@@ -1,3 +1,7 @@
+
+
+add_subdirectory(tbb)
+
 file(GLOB GTEST_CPPS "gtest/googletest/src/gtest-all.cc")
 file(GLOB_RECURSE GTEST_HPPS "gtest/googletest/include/*.h")
 
