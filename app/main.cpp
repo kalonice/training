@@ -17,7 +17,12 @@
 #include <cctype>
 #include <memory>
 
+#include <curses.h>
+
+bool is_finish = false;
+
 void run(const char* in_file_path, const char* out_file_path, int ntokens) {
+  tbb::tick_count start = tbb::tick_count::now();
   std::ifstream in_file(in_file_path);
   std::ofstream out_file(out_file_path);
 
@@ -35,12 +40,12 @@ void run(const char* in_file_path, const char* out_file_path, int ntokens) {
 
   tbb::filter_t<void, std::shared_ptr<std::string>> reader(tbb::filter::serial_in_order, [&in_file, &in_file_current_pos, &in_file_size](tbb::flow_control& fc) {
     auto str = std::make_shared<std::string>();
-    if (in_file.eof()) {
+    if (in_file.eof() || is_finish) {
       fc.stop();
       in_file_current_pos = in_file_size;
     } else {
-      std::getline(in_file, *str);
       in_file_current_pos = in_file.tellg();
+      std::getline(in_file, *str);      
     }
     return str;
   } );
@@ -70,7 +75,12 @@ void run(const char* in_file_path, const char* out_file_path, int ntokens) {
   tbb::filter_t<void,void> pipeline = reader & processor & writer;
 
   tbb::parallel_pipeline(ntokens, pipeline);
+  tbb::tick_count finish = tbb::tick_count::now();
+  std::cout << "Time = " << (finish - start).seconds() << " s" << std::endl;
+  is_finish = true;
 }
+
+
 
 int main(int argc, char* argv[]) {
   if (argc < 4) {
@@ -78,20 +88,27 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  initscr();
+  timeout(50);
+
   char* in_file_path = argv[1];
   char* out_file_path = argv[2];
   int num_threads = atoi(argv[3]);
   int ntokens = 20;
 
   tbb::task_scheduler_init init(num_threads);
-  tbb::tick_count start = tbb::tick_count::now();
-  //run(in_file_path, out_file_path, 16);
+
   std::thread processor(run, in_file_path, out_file_path, 16);
+
+  while (!is_finish) {
+    char c = getch();
+    if (c == 'q') {
+      is_finish = true;
+    }
+  }
+
   processor.join();
-  tbb::tick_count finish = tbb::tick_count::now();
-
-
-  std::cout << "Time = " << (finish - start).seconds() << " s" << std::endl;
-
+  endwin();
+  std::cout << "Work has finished!" << std::endl;
   return 0;
 }

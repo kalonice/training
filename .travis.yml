@@ -19,6 +19,9 @@ addons:
       - g++-5
       - gcc-5
 
+before_install:
+  - sudo apt-get install libncurses-dev
+
 install:
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX="g++-5" CC="gcc-5"; fi
 
