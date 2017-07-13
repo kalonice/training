@@ -2,6 +2,8 @@
 #include "tbb/tick_count.h"
 #include "tbb/task_scheduler_init.h"
 #include "tbb/tbb_allocator.h"
+#include "./mybiginteger.h"
+#include "./calculator.h"
 
 #include <iostream>
 #include <sstream>
@@ -14,19 +16,6 @@
 #include <iomanip>
 #include <cctype>
 #include <memory>
-
-void hardWork() {
-  size_t count = 2000;
-
-  std::vector<double> v(count);
-
-  for (int i = 0; i < count; ++i)
-    v[i] = rand();
-
-  std::sort(v.begin(), v.end(), [](const double& a, const double& b) {
-    return sin(a) < sin(b);
-  });
-}
 
 void run(const char* in_file_path, const char* out_file_path, int ntokens) {
   std::ifstream in_file(in_file_path);
@@ -56,35 +45,25 @@ void run(const char* in_file_path, const char* out_file_path, int ntokens) {
     return str;
   } );
 
-  tbb::filter_t<std::shared_ptr<std::string>, int> processor(tbb::filter::parallel, [](const std::shared_ptr<std::string>& in) {
-    int i = 0;
-    int count = 0;
-    const std::string& str = *in.get();
-    while (i < str.size()) {
-      while (i < str.size() && std::isspace(str[i])) {
-        hardWork();
-        ++i;
-      }
-      int start = i;
-
-      while (i < str.size() && !std::isspace(str[i])) {
-        hardWork();
-        ++i;
-      }
-      if (start != i)
-        count++;
+  tbb::filter_t<std::shared_ptr<std::string>, std::string> processor(tbb::filter::parallel, [](std::shared_ptr<std::string>& in) {
+    const std::string& expression = *in.get();
+    mycalc::Calculator worker(expression);
+    auto result = worker.CalcExpression();
+    if (result) {
+      return result->GetValue();
+    } else {
+      return std::string("Invalid expression");
     }
-
-    return count;
   } );
 
-  tbb::filter_t<int, void> writer(tbb::filter::serial_in_order, [&out_file, &in_file_current_pos, &in_file_size, &prev_progress](const int& in) {
-    out_file << in << std::endl;
+  tbb::filter_t<std::string, void> writer(tbb::filter::serial_in_order, [&out_file, &in_file_current_pos, &in_file_size, &prev_progress](const std::string& in) {
+   out_file << in << std::endl;
+
     int progress = 100 * in_file_current_pos / in_file_size;
     if (prev_progress != progress) {
       prev_progress = progress;
       std::cout << std::setprecision(2) << std::fixed << progress << " % \r";
-      std::fflush(stdout);      
+      std::fflush(stdout);
     }
   } );
 
@@ -105,10 +84,12 @@ int main(int argc, char* argv[]) {
   int ntokens = 20;
 
   tbb::task_scheduler_init init(num_threads);
-
   tbb::tick_count start = tbb::tick_count::now();
-  run(in_file_path, out_file_path, 16);
+  //run(in_file_path, out_file_path, 16);
+  std::thread processor(run, in_file_path, out_file_path, 16);
+  processor.join();
   tbb::tick_count finish = tbb::tick_count::now();
+
 
   std::cout << "Time = " << (finish - start).seconds() << " s" << std::endl;
 

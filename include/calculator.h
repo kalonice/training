@@ -6,20 +6,33 @@
 #include <iostream>
 #include <list>
 #include <memory>
-#include "../include/mybiginteger.h"
+#include "./mybiginteger.h"
+#include "./mathoperations.h"
 
 namespace mycalc {
-
+/**
+ *
+ */
 class Calculator {
  public:
-  explicit Calculator(const std::string &input_expression);
+  /**
+   * Конструктор
+   * @param input_expression входное выражение
+   */
+  explicit Calculator(const std::string& input_expression);
+  /**
+   * Деструктор
+   */
   ~Calculator() {}
+  /**
+   * Вычисленеие выражения и запись результата
+   * @return указатель на BigInteger
+   */
   std::unique_ptr<BigInteger> CalcExpression();  // вычисленеие выражения и запись результата
 
  private:
   void ParseExpression();  // создание обратной польской записи и анализ допустимости выражения
   std::unique_ptr<BigInteger> Calculate();  // получение результата из сформированной обратной польской записи
-
   void ProcessOperationStack(std::unique_ptr<IOperation> cur_operation);  // Обработка стека
   void moveOperationToRpn();
 
