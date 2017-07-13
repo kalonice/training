@@ -13,8 +13,8 @@ TEST(RPN_1, Is_RPN_1_Correct) {
   std::string exp = "-12+8-2*6 *( 9-3*6)*5-7+(2 - 1) +  99";
   std::cout << "input expression#1: " << exp << std::endl;
   mycalc::Calculator work(exp);
-  /*
   auto output = work.CalcExpression();
+  /*
   std::cout << "answer#1: ";
   if (output) {
     std::cout << *output << std::endl;
