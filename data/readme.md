@@ -53,6 +53,7 @@
 ```
 > cd bin
 > ./task_arithmometer ../../data/in.txt ../../data/out.txt 4
+> ./task_arithmometer ../../data/in_big.txt ../../data/out_big.txt
 ```
 
 Для запуска приложения в качестве аргументов необходимо указать:
