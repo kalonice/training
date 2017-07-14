@@ -108,7 +108,7 @@ class BigInteger : public IBaseElement {
   bool operator<(const BigInteger&) const;
   /**
    *
-   * @return Выводит "длинное" число в стандартный поток вывода
+   * @return Выводит "длинное" число в поток вывода
    */
   friend std::ostream& operator<<(std::ostream&, const BigInteger&);
   /**

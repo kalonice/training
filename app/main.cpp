@@ -20,9 +20,11 @@
 
 #include <curses.h>
 
-volatile bool is_finish = false;
-volatile double res_time = 0.;
-
+volatile bool is_finish = false;  // флаг принудительного выхода из приложения
+volatile double res_time = 0.;    // Общее время работы программы
+/**
+ * Запуск pipeline
+ */
 void run(const char* in_file_path, const char* out_file_path, int num_threads) {
   tbb::task_scheduler_init init(num_threads);
   int ntokens = 20;
@@ -42,7 +44,9 @@ void run(const char* in_file_path, const char* out_file_path, int num_threads) {
 
   int in_file_current_pos = 0;
   int prev_progress = -1;
-
+  /**
+   * Читает очередную строку из входного файла и передает вычисленное выражение в тред обработки
+   */
   tbb::filter_t<void, std::shared_ptr<std::string>> reader(tbb::filter::serial_in_order, [&in_file, &in_file_current_pos, &in_file_size](tbb::flow_control& fc) {
     auto str = std::make_shared<std::string>();
     if (in_file.eof() || is_finish) {
@@ -56,13 +60,17 @@ void run(const char* in_file_path, const char* out_file_path, int num_threads) {
     }
     return str;
   } );
-
+  /**
+   * Возвращает результат вычисления выражения
+   */
   tbb::filter_t<std::shared_ptr<std::string>, std::shared_ptr<mycalc::BigInteger>> processor(tbb::filter::parallel, [](const std::shared_ptr<std::string>& in) {
     const std::string& expression = *in.get();
     mycalc::Calculator worker(expression);
     return worker.CalcExpression();
   } );
-
+  /**
+   * Выводит результат вычисления выражения в выходной файл
+   */
   tbb::filter_t<std::shared_ptr<mycalc::BigInteger>, void> writer(tbb::filter::serial_in_order, [&out_file, &in_file_current_pos, &in_file_size, &prev_progress](const std::shared_ptr<mycalc::BigInteger>& result) {
     if (result) {
       out_file << *result << std::endl;
@@ -89,7 +97,7 @@ void run(const char* in_file_path, const char* out_file_path, int num_threads) {
 
 int main(int argc, char* argv[]) {
   if (argc < 3) {
-    std::cout << "Usage: <app> <in-file> <out-file> [<num_threads>]" << std::endl;
+    std::cout << "Usage: <app> <in_file> <out_file> [<num_threads>]" << std::endl;
     return 1;
   }
 
