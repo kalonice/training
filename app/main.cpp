@@ -20,6 +20,7 @@
 #include <curses.h>
 
 bool is_finish = false;
+double res_time;
 
 void run(const char* in_file_path, const char* out_file_path, int ntokens) {
   tbb::tick_count start = tbb::tick_count::now();
@@ -76,7 +77,8 @@ void run(const char* in_file_path, const char* out_file_path, int ntokens) {
 
   tbb::parallel_pipeline(ntokens, pipeline);
   tbb::tick_count finish = tbb::tick_count::now();
-  std::cout << "Time = " << (finish - start).seconds() << " s" << std::endl;
+  res_time = (finish - start).seconds();
+  // std::cout << "Time = " << (finish - start).seconds() << " s" << std::endl;
   is_finish = true;
 }
 
@@ -110,5 +112,6 @@ int main(int argc, char* argv[]) {
   processor.join();
   endwin();
   std::cout << "Work has finished!" << std::endl;
+  std::cout << "Time = " << res_time << " s" << std::endl;
   return 0;
 }
